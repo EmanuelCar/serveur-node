@@ -22,7 +22,7 @@ var myRouter = express.Router();
 var connection = mysql.createConnection({
     host: "localhost",
     user: "root",
-    port: "3308",
+    port: "",
     password: "",
     database: "projet_web"
 });
@@ -98,12 +98,13 @@ myRouter.get('/bdd', function (req, res) {
         } else {
             console.log('Requête réussie !\n');
             //console.log(rows);
-            for (var i = 0; i < 3; i++) {
-                res.json({
-                    Roles: rows[i].Roles
-                });
-           
-        }
-        }
+            for(var i=0; i < 3; i++) {
+                res.write(JSON.stringify({
+                    id : rows[i].id_Statut, 
+                    Roles : rows[i].Roles,
+                }));
+            }
+            res.end();
+        } 
     });
 })

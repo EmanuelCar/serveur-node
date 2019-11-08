@@ -6,6 +6,8 @@ const http = require("http");
 const hostname = '127.0.0.1';
 const port = 3000;
 
+var express = require('express');
+var mysql = require('mysql');
 var app = express();
 
 var bodyParser = require("body-parser");
@@ -16,6 +18,22 @@ app.use(bodyParser.json());
 //Afin de faciliter le routage (les URL que nous souhaitons prendre en charge dans notre API), nous créons un objet Router.
 //C'est à partir de cet objet myRouter, que nous allons implémenter les méthodes. 
 var myRouter = express.Router();
+
+var connection = mysql.createConnection({
+    host: "localhost",
+    user: "root",
+    port: "3308",
+    password: "",
+    database: "projet_web"
+});
+
+connection.connect(function (error) {
+    if (!!error) {
+        console.log("Erreur");
+    } else {
+        console.log("Connecté !");
+    }
+});
 
 // Je vous rappelle notre route (/piscines).  
 myRouter.route('/')
@@ -58,7 +76,7 @@ myRouter.route('/piscines')
 app.use(myRouter);
 
 // Démarrer le serveur 
-app.listen(port, hostname, function () {
+app.listen(port, function () {
     console.log("Mon serveur fonctionne sur http://" + hostname + ":" + port);
 });
 
@@ -72,3 +90,20 @@ myRouter.route('/piscines/:piscine_id')
     .delete(function (req, res) {
         res.json({ message: "Vous souhaitez supprimer la piscine n°" + req.params.piscine_id });
     });
+
+myRouter.get('/bdd', function (req, res) {
+    connection.query("SELECT "+ req.query.col +" FROM statut", function (error, rows) {
+        if (!!error) {
+            console.log('Erreur dans la requête');
+        } else {
+            console.log('Requête réussie !\n');
+            //console.log(rows);
+            for (var i = 0; i < 3; i++) {
+                res.json({
+                    Roles: rows[i].Roles
+                });
+           
+        }
+        }
+    });
+})

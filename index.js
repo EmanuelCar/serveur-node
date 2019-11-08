@@ -91,8 +91,8 @@ myRouter.route('/piscines/:piscine_id')
         res.json({ message: "Vous souhaitez supprimer la piscine n°" + req.params.piscine_id });
     });
 
-myRouter.get('/bdd', function (req, res) {
-    connection.query("SELECT "+ req.query.col +" FROM statut", function (error, rows) {
+myRouter.post('/bdd', function (req, res) {
+    connection.query("SELECT "+ req.body.col +" FROM statut", function (error, rows) {
         if (!!error) {
             console.log('Erreur dans la requête');
         } else {
@@ -100,7 +100,7 @@ myRouter.get('/bdd', function (req, res) {
             //console.log(rows);
             for(var i=0; i < 3; i++) {
                 res.write(JSON.stringify({
-                    id : rows[i].id_Statut, 
+                    id : rows[i].Id_Statut, 
                     Roles : rows[i].Roles,
                 }));
             }

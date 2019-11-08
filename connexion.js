@@ -6,7 +6,7 @@ var connection = mysql.createConnection({
     host: "localhost",
     user: "root",
     password: "",
-    database: "projet_web"
+    database: "prosit php"
 });
 
 connection.connect(function (error) {
@@ -22,7 +22,9 @@ app.get('/', function(req, resp){
         if(!!error) {
             console.log('Erreur dans la requête');
         } else {
-            console.log('Requête réussie !');
+            console.log('Requête réussie !\n');
+            //console.log(rows);
+            resp.send('salut ' + rows[0].username)
         }
     });
 })

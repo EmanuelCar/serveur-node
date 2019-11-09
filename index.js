@@ -1,5 +1,5 @@
-
 var express = require('express');
+var co = require('./coeur/connexion');
 
 //Load HTTP module
 const http = require("http");
@@ -35,76 +35,49 @@ connection.connect(function (error) {
     }
 });
 
-// Je vous rappelle notre route (/piscines).  
-myRouter.route('/')
-    // all permet de prendre en charge toutes les méthodes. 
-    .all(function (req, res) {
-        res.json({ message: "Bienvenue sur notre Frugal API ", methode: req.method });
-    });
-
-myRouter.route('/piscines')
-    // J'implémente les méthodes GET, PUT, UPDATE et DELETE
-    // GET
-    .get(function (req, res) {
-        res.json({
-            message: "Liste les piscines de Lille Métropole avec paramètres :",
-            ville: req.query.ville,
-            nbResultat: req.query.maxresultat,
-            methode: req.method
-        });
-    })
-    //POST
-    .post(function (req, res) {
-        res.json({
-            message: "Ajoute une nouvelle piscine à la liste",
-            nom: req.body.nom,
-            ville: req.body.ville,
-            taille: req.body.taille,
-            methode: req.method
-        });
-    })
-    //PUT
-    .put(function (req, res) {
-        res.json({ message: "Mise à jour des informations d'une piscine dans la liste", methode: req.method });
-    })
-    //DELETE
-    .delete(function (req, res) {
-        res.json({ message: "Suppression d'une piscine dans la liste", methode: req.method });
-    });
-
-// Nous demandons à l'application d'utiliser notre routeur
-app.use(myRouter);
-
 // Démarrer le serveur 
 app.listen(port, function () {
     console.log("Mon serveur fonctionne sur http://" + hostname + ":" + port);
 });
 
-myRouter.route('/piscines/:piscine_id')
+// Nous permet de récupérer les statuts
+myRouter.route('/bdd')
+        .post(function (req, res) {
+        connection.query("SELECT "+ req.body.col +" FROM statut", function (error, rows) {
+            if (!!error) {
+                console.log('Erreur dans la requête');
+            } else {
+                console.log('Requête réussie !');
+                numRows = rows.length;
+                console.log(co.x);
+                for(var i=0; i < numRows; i++) {
+                    res.write(JSON.stringify({
+                        id : rows[i].Id_Statut, 
+                        Roles : rows[i].Roles,
+                    }));
+                }
+                res.end();
+            } 
+        });
+    })
+
     .get(function (req, res) {
-        res.json({ message: "Vous souhaitez accéder aux informations de la piscine n°" + req.params.piscine_id });
-    })
-    .put(function (req, res) {
-        res.json({ message: "Vous souhaitez modifier les informations de la piscine n°" + req.params.piscine_id });
-    })
-    .delete(function (req, res) {
-        res.json({ message: "Vous souhaitez supprimer la piscine n°" + req.params.piscine_id });
+        connection.query("SELECT "+ req.query.col +" FROM statut", function (error, rows) {
+            if (!!error) {
+                console.log('Erreur dans la requête');
+            } else {
+                console.log('Requête réussie !');
+                numRows = rows.length;
+                for(var i=0; i < numRows; i++) {
+                    res.write(JSON.stringify({
+                        id : rows[i].Id_Statut, 
+                        Roles : rows[i].Roles,
+                    }));
+                }
+                res.end();
+            } 
+        });
     });
 
-myRouter.post('/bdd', function (req, res) {
-    connection.query("SELECT "+ req.body.col +" FROM statut", function (error, rows) {
-        if (!!error) {
-            console.log('Erreur dans la requête');
-        } else {
-            console.log('Requête réussie !\n');
-            //console.log(rows);
-            for(var i=0; i < 3; i++) {
-                res.write(JSON.stringify({
-                    id : rows[i].Id_Statut, 
-                    Roles : rows[i].Roles,
-                }));
-            }
-            res.end();
-        } 
-    });
-})
+// Nous demandons à l'application d'utiliser notre routeur
+app.use(myRouter);

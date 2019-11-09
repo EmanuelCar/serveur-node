@@ -1,5 +1,4 @@
 
-var express = require('express');
 
 //Load HTTP module
 const http = require("http");
@@ -22,7 +21,7 @@ var myRouter = express.Router();
 var connection = mysql.createConnection({
     host: "localhost",
     user: "root",
-    port: "",
+    port: "3308",
     password: "",
     database: "projet_web"
 });
@@ -91,20 +90,70 @@ myRouter.route('/piscines/:piscine_id')
         res.json({ message: "Vous souhaitez supprimer la piscine n°" + req.params.piscine_id });
     });
 
-myRouter.post('/bdd', function (req, res) {
-    connection.query("SELECT "+ req.body.col +" FROM statut", function (error, rows) {
+myRouter.get('/bdd', function (req, res) {
+    connection.query("SELECT " + req.query.col + " FROM statut", function (error, rows) {
         if (!!error) {
             console.log('Erreur dans la requête');
         } else {
             console.log('Requête réussie !\n');
             //console.log(rows);
-            for(var i=0; i < 3; i++) {
+            for (var i = 0; i < rows.length; i++) {
                 res.write(JSON.stringify({
-                    id : rows[i].Id_Statut, 
-                    Roles : rows[i].Roles,
+                    id: rows[i].Id_Statut,
+                    Roles: rows[i].Roles,
                 }));
             }
             res.end();
-        } 
+        }
+    });
+})
+
+
+myRouter.get('/article', function (req, res) {
+    connection.query("SELECT article.Nom,Stock,Prix,Description,categorie.Nom as Categorie,image.URL FROM `article` INNER JOIN categorie ON article.ID_Categorie = categorie.Id_Categorie INNER JOIN image ON image.Id_image = article.ID_image",
+        function (error, rows) {
+            if (!!error) {
+                console.log('Erreur dans la requête');
+            } else {
+                console.log('Requête réussie !\n');
+                console.log(rows);
+                for (var i = 0; i < rows.length; i++) {
+                    res.write(JSON.stringify({
+                        Nom: rows[i].Nom,
+                        Stock: rows[i].Stock,
+                        Prix: rows[i].Prix,
+                        Description: rows[i].Description,
+                        Categorie: rows[i].Categorie,
+                        URL: rows[i].URL,
+                    }));
+                }
+                res.end();
+            }
+        });
+
+})
+
+myRouter.post('/article/adcategorie', function (req, res) {
+    connection.query("SELECT Nom FROM categorie WHERE Nom = '" + req.body.cat + "'", function (error, rows) {
+        if (!!error) {
+            console.log('Erreur dans la requête 1 ');
+        } else if (rows[0] != null) {
+            console.log('Requête réussie !\n');
+            //console.log(rows);
+            res.json({ message: "Categorie deja existante" });
+        }
+        else {
+            connection.query("INSERT INTO categorie (Id_Categorie, Nom) VALUES (NULL,'" + req.body.cat + "');",
+                function (error, rows) {
+                    if (!!error) {
+                        console.log('Erreur dans la requête 2 ');
+                    } else {
+                        console.log('Requête réussie !\n');
+                        res.json({ message: "Ajout de la categorie d'article " + req.body.cat });
+
+                    }
+
+                });
+        }
     });
 })

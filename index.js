@@ -1,5 +1,5 @@
 var express = require('express');
-var couu = require('./coeur/connexion');
+var metpost = require('./coeur/postmethod');
 
 //Load HTTP module
 const http = require("http");
@@ -34,25 +34,10 @@ app.listen(port, function () {
 
 // Nous permet de récupérer les statuts
 myRouter.route('/bdd')
-        .post(couu.x)
+    .post(metpost.statut)
 
-    .get(function (req, res) {
-        co.connection.query("SELECT "+ req.query.col +" FROM statut", function (error, rows) {
-            if (!!error) {
-                console.log('Erreur dans la requête');
-            } else {
-                console.log('Requête réussie !');
-                numRows = rows.length;
-                for(var i=0; i < numRows; i++) {
-                    res.write(JSON.stringify({
-                        id : rows[i].Id_Statut, 
-                        Roles : rows[i].Roles,
-                    }));
-                }
-                res.end();
-            } 
-        });
-    });
+myRouter.route('/user')
+    .post(metpost.users)
 
 // Nous demandons à l'application d'utiliser notre routeur
 app.use(myRouter);

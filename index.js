@@ -1,5 +1,5 @@
 var express = require('express');
-var co = require('./coeur/connexion');
+var couu = require('./coeur/connexion');
 
 //Load HTTP module
 const http = require("http");
@@ -7,8 +7,8 @@ const hostname = '127.0.0.1';
 const port = 3000;
 
 var express = require('express');
-var mysql = require('mysql');
 var app = express();
+var co = require('./bddconnect');
 
 var bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -19,15 +19,7 @@ app.use(bodyParser.json());
 //C'est à partir de cet objet myRouter, que nous allons implémenter les méthodes. 
 var myRouter = express.Router();
 
-var connection = mysql.createConnection({
-    host: "localhost",
-    user: "root",
-    port: "",
-    password: "",
-    database: "projet_web"
-});
-
-connection.connect(function (error) {
+co.connection.connect(function (error) {
     if (!!error) {
         console.log("Erreur");
     } else {
@@ -42,27 +34,10 @@ app.listen(port, function () {
 
 // Nous permet de récupérer les statuts
 myRouter.route('/bdd')
-        .post(function (req, res) {
-        connection.query("SELECT "+ req.body.col +" FROM statut", function (error, rows) {
-            if (!!error) {
-                console.log('Erreur dans la requête');
-            } else {
-                console.log('Requête réussie !');
-                numRows = rows.length;
-                console.log(co.x);
-                for(var i=0; i < numRows; i++) {
-                    res.write(JSON.stringify({
-                        id : rows[i].Id_Statut, 
-                        Roles : rows[i].Roles,
-                    }));
-                }
-                res.end();
-            } 
-        });
-    })
+        .post(couu.x)
 
     .get(function (req, res) {
-        connection.query("SELECT "+ req.query.col +" FROM statut", function (error, rows) {
+        co.connection.query("SELECT "+ req.query.col +" FROM statut", function (error, rows) {
             if (!!error) {
                 console.log('Erreur dans la requête');
             } else {

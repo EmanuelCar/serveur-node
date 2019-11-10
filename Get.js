@@ -6,14 +6,6 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 
-co.connection.connect(function (error) {
-    if (error) {
-        console.log("Erreur");
-    } else {
-        console.log("Connecté !");
-    }
-});
-
 var add = function (req, res) {
     co.connection.query("SELECT Nom FROM categorie WHERE Nom = '" + req.body.cat + "'", function (error, rows) {
         if (!!error) {
@@ -63,6 +55,18 @@ var article = function (req, res) {
 
 }
 
+var eventpar = function (req, res) {
+    co.connection.query("INSERT INTO participer (Id_utilisateur,Id_evenements) SELECT Id_utilisateur, Id_evenements FROM utilisateur,evenement WHERE utilisateur.Nom = '" + req.body.nom +"' AND utilisateur.Prenom = '" + req.body.prenom +"' AND evenement.Nom = '" +req.body.event +"'", function (error, rows) {
+        if (!!error) {
+            console.log('Erreur dans la requête');
+            res.json({ message: "tu est déjà inscrit" });
+        } else {
+            console.log('Requête réussie !\n');
+            //console.log(rows);
+            res.json({ message: "tu est bien inscrit" });
+        }
+    });
+}
 
 var addarticle = function (req, res) {
     var img = '';
@@ -164,10 +168,16 @@ var addarticle = function (req, res) {
         });
     });
 }
+
+
+
+
+
 module.exports = {
     add,
     article,
-    addarticle
+    addarticle,
+    eventpar
 };
 
 

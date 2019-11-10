@@ -39,6 +39,8 @@ myRouter.route('/article')
 myRouter.route('/article/adcategorie')
     .post(geting.add)
 
+myRouter.route('/event')
+    .post(geting.eventpar)
 
 // Nous demandons à l'application d'utiliser notre routeur
 app.use(myRouter);

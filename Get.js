@@ -289,6 +289,25 @@ var liker = function (req, res) {
     });
 }
 
+var commandes = function (req, res) {
+        co.connection.query("SELECT article.Nom, acheter.Quantite FROM `article` INNER JOIN acheter ON article.Id_Article = acheter.Id_Article INNER JOIN commande ON commande.Id_commande = acheter.id_commande INNER JOIN utilisateur On utilisateur.Id_utilisateur = commande.Id_utilisateur WHERE utilisateur.Nom = '" + req.body.nom + "' AND utilisateur.Prenom = '" + req.body.prenom + "' AND commande.Fini = 0",
+            function (error, rows) {
+          
+                if (!!error) {
+                    console.log('Erreur dans la requête');
+                } else {
+                    console.log('Requête réussie !\n');
+                    for (var i = 0; i < rows.length; i++) {
+                        res.write(JSON.stringify({
+                            Article: rows[i].Nom,
+                            Quantite: rows[i].Quantite,
+                        }));
+                    }
+                    res.end();
+                }
+            });
+    
+    }
 
 module.exports = {
     add,
@@ -296,6 +315,7 @@ module.exports = {
     addarticle,
     eventpar,
     articlebyprix,
-    liker
+    liker,
+    commandes
 };
 

@@ -46,6 +46,8 @@ myRouter.route('/event')
     .post(geting.eventpar)
 myRouter.route('/like')
     .post(geting.liker)
-    
+
+myRouter.route('/panier/ut')
+    .post(geting.commandes)
 // Nous demandons à l'application d'utiliser notre routeur
 app.use(myRouter);

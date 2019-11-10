@@ -36,8 +36,12 @@ app.listen(port, function () {
 myRouter.route('/bdd')
     .post(metpost.statut)
 
-myRouter.route('/user')
-    .post(metpost.users)
+myRouter.route('/userco')
+    .post(metpost.userco)
 
+myRouter.route('/userinsc')
+    .post(metpost.userinsc)
+
+    
 // Nous demandons à l'application d'utiliser notre routeur
 app.use(myRouter);

@@ -96,7 +96,6 @@ var addphoto = function (req, res) {
                 console.log('Erreur dans la requête');
             } else if(rows.length == 0) {
                 res.send("L'évènement n'existe pas ou il n'est pas encore passé !");
-                //res.json({ message: "Bienvenu " + rows.Prenom + " " + rows.Nom + " !" + ", vous participez à :" + rows.évènement + ", l'évènement prend fin le : " + rows.Date_fin });
             } else {
                 var id_evenement = rows[0].Id_evenements;
                 co.connection.query("INSERT INTO `image` (URL, Id_evenements) VALUES (?, ?) ", [url, id_evenement], function (error, rows) {
@@ -114,9 +113,84 @@ var addphoto = function (req, res) {
         res.send("veuillez sélectionner un évènement !");
     }
 }
+
+var recupphoto = function(req, res){
+    co.connection.query("SELECT URL FROM image", function(error, rows){
+        if (!!error) {
+            console.log('Erreur dans la requête');
+        } else {
+            console.log('Requête réussie !');
+            numRows = rows.length;
+            for (var i = 0; i < numRows; i++) {
+                var test = "URL" + " " + (i+1);
+                res.write(JSON.stringify({
+                    [test]: rows[i].URL
+                }));
+            }
+            res.end();
+        }
+    });
+}
+
+var participant = function(req, res) {
+    var event = req.body.event;
+    if(event) {
+        co.connection.query("SELECT evenement.Nom AS évènement, utilisateur.Nom, utilisateur.Prenom FROM participer INNER JOIN evenement ON participer.Id_evenements = evenement.Id_evenements INNER JOIN utilisateur ON participer.Id_Utilisateur = utilisateur.Id_Utilisateur WHERE evenement.Nom = ?", [event], function(error, rows) {
+            if (!!error) {
+                console.log('Erreur dans la requête');
+            } else if(rows.length == 0){
+                res.send("veuillez sélectionner un évènement existant !")
+            } else {
+                res.write(JSON.stringify({
+                    évènement: rows[0].évènement
+                }));
+                numRows = rows.length;
+                for (var i = 0; i < numRows; i++) {
+                    var nom = "Nom" + " " + (i+1);
+                    var prenom = "Prenom" + " " + (i+1);
+                    res.write(JSON.stringify({
+                        [nom]: rows[i].Nom,
+                        [prenom]: rows[i].Prenom
+                    }));
+                }
+                res.end();
+            }
+        })
+    } else {
+        res.send("veuillez sélectionner un évènement !")
+    }
+}
+
+var actuevent = function(req, res) {
+    var today = new Date();
+    var date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
+
+    co.connection.query("SELECT Nom, Description, Date_debut, Date_fin, localisation.Lieux FROM evenement INNER JOIN localisation ON evenement.Id_Localisation = localisation.Id_Localisation WHERE Date_fin >= ?", [date], function(error, rows){
+        if (!!error) {
+            console.log('Erreur dans la requête');
+        } else {
+            numRows = rows.length;
+            for (var i = 0; i < numRows; i++) {
+                var event = "Évènement" + " " + (i+1);
+                res.write(JSON.stringify({
+                    [event]: rows[i].Nom,
+                    Description: rows[i].Description,
+                    "Date de début": rows[i].Date_debut,
+                    "Date de fin": rows[i].Date_fin,
+                    Lieu: rows[i].Lieux
+                }));
+            }
+            res.end();
+        } 
+    })
+}
+
 module.exports = {
     statut,
     userco,
     userinsc,
-    addphoto
+    addphoto,
+    recupphoto,
+    participant,
+    actuevent
 };

@@ -45,6 +45,14 @@ myRouter.route('/userinsc')
 myRouter.route('/addphoto')
     .post(metpost.addphoto)
 
+myRouter.route('/recupphoto')
+    .post(metpost.recupphoto)
+
+myRouter.route('/participant')
+    .post(metpost.participant)
+
+myRouter.route('/actuevent')
+    .post(metpost.actuevent)
     
 // Nous demandons à l'application d'utiliser notre routeur
 app.use(myRouter);

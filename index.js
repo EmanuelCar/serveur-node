@@ -44,6 +44,8 @@ myRouter.route('/article/adcategorie')
 
 myRouter.route('/event')
     .post(geting.eventpar)
+    myRouter.route('/event/add')
+    .post(geting.eventadd)
 myRouter.route('/like')
     .post(geting.liker)
 

@@ -120,7 +120,7 @@ var addarticle = function (req, res) {
                                 if (!!error) {
                                     console.log('Erreur dans la requête 44 ');
                                     co.connection.rollback(function () {
-                                        
+
                                     });
                                 }
                             });
@@ -193,7 +193,7 @@ var addarticle = function (req, res) {
 
 var liker = function (req, res) {
     co.connection.beginTransaction(function (error) {
-        co.connection.query("SELECT Id_utilisateur FROM utilisateur WHERE Nom = '" + req.body.nom + "' AND prenom = '"+ req.body.prenom +"'", function (error, rows) {
+        co.connection.query("SELECT Id_utilisateur FROM utilisateur WHERE Nom = '" + req.body.nom + "' AND prenom = '" + req.body.prenom + "'", function (error, rows) {
             if (!!error) {
                 console.log('Erreur dans la requête 1 ');
                 co.connection.rollback(function () {
@@ -290,24 +290,80 @@ var liker = function (req, res) {
 }
 
 var commandes = function (req, res) {
-        co.connection.query("SELECT article.Nom, acheter.Quantite FROM `article` INNER JOIN acheter ON article.Id_Article = acheter.Id_Article INNER JOIN commande ON commande.Id_commande = acheter.id_commande INNER JOIN utilisateur On utilisateur.Id_utilisateur = commande.Id_utilisateur WHERE utilisateur.Nom = '" + req.body.nom + "' AND utilisateur.Prenom = '" + req.body.prenom + "' AND commande.Fini = 0",
-            function (error, rows) {
-          
-                if (!!error) {
-                    console.log('Erreur dans la requête');
-                } else {
-                    console.log('Requête réussie !\n');
-                    for (var i = 0; i < rows.length; i++) {
-                        res.write(JSON.stringify({
-                            Article: rows[i].Nom,
-                            Quantite: rows[i].Quantite,
-                        }));
-                    }
-                    res.end();
+    co.connection.query("SELECT article.Nom, acheter.Quantite FROM `article` INNER JOIN acheter ON article.Id_Article = acheter.Id_Article INNER JOIN commande ON commande.Id_commande = acheter.id_commande INNER JOIN utilisateur On utilisateur.Id_utilisateur = commande.Id_utilisateur WHERE utilisateur.Nom = '" + req.body.nom + "' AND utilisateur.Prenom = '" + req.body.prenom + "' AND commande.Fini = 0",
+        function (error, rows) {
+
+            if (!!error) {
+                console.log('Erreur dans la requête');
+            } else {
+                console.log('Requête réussie !\n');
+                for (var i = 0; i < rows.length; i++) {
+                    res.write(JSON.stringify({
+                        Article: rows[i].Nom,
+                        Quantite: rows[i].Quantite,
+                    }));
                 }
-            });
-    
-    }
+                res.end();
+            }
+        });
+
+}
+
+var eventadd = function (req, res) {
+    co.connection.beginTransaction(function (error) {
+        co.connection.query("SELECT Nom FROM evenement WHERE Nom = '" + req.body.nom + "'", function (error, rows) {
+            if (!!error) {
+                console.log('Erreur dans la requête 1 ');
+            } else if (rows[0] != null) {
+                console.log('Requête réussie !\n');
+                //console.log(rows);
+                res.json({ message: "evenement deja existante" });
+            } else {
+                co.connection.query("INSERT INTO evenement (Nom,Description,Date_debut,Date_fin,Id_Localisation) VALUES ('" + req.body.nom + "','" + req.body.description + "','" + req.body.dated + "','" + req.body.datef + "',(SELECT Id_Localisation FROM localisation WHERE Lieux = '" + req.body.lieux + "'))",
+                    function (error, rows) {
+                        if (!!error) {
+                            console.log('Erreur dans la requête 2 ');
+                            co.connection.rollback(function () {
+
+                            });
+                        } else {
+                            co.connection.query("SELECT Id_evenements FROM evenement WHERE Nom = '" + req.body.nom + "'",
+                                function (error, rows) {
+                                    if (!!error) {
+                                        console.log('Erreur dans la requête 3 ');
+                                        co.connection.rollback(function () {
+                                        });
+                                    } else {
+                                        var img = rows[0].Id_evenements
+                                        co.connection.query("INSERT INTO image (URL,Id_evenements,Image_evenement) VALUES ('" + req.body.URL + "'," + img + ",1) ", function (error, rows) {
+                                            if (!!error) {
+                                                console.log('Erreur dans la requête 4 ');
+                                                co.connection.rollback(function () {
+
+                                                });
+                                            } else {
+                                                co.connection.commit(function (error) {
+                                                    if (!!error) {
+                                                        console.log('Erreur dans la requête 5 ');
+                                                        co.connection.rollback(function () {
+                                                        });
+                                                    } else {
+                                                        console.log('Requête réussie !\n');
+                                                        res.json({ message: "Ajout de l'evenement " + req.body.nom });
+                                                    }
+                                                });
+
+                                            }
+                                        });
+                                    }
+                                });
+                        }
+                    });
+                }
+        });
+    });
+}
+
 
 module.exports = {
     add,
@@ -316,6 +372,7 @@ module.exports = {
     eventpar,
     articlebyprix,
     liker,
-    commandes
+    commandes,
+    eventadd
 };
 

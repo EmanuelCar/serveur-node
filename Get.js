@@ -77,7 +77,7 @@ var articlebyprix = function (req, res) {
 
 }
 var eventpar = function (req, res) {
-    co.connection.query("INSERT INTO participer (Id_utilisateur,Id_evenements) SELECT Id_utilisateur, Id_evenements FROM utilisateur,evenement WHERE utilisateur.Nom = '" + req.body.nom +"' AND utilisateur.Prenom = '" + req.body.prenom +"' AND evenement.Nom = '" +req.body.event +"'", function (error, rows) {
+    co.connection.query("INSERT INTO participer (Id_utilisateur,Id_evenements) SELECT Id_utilisateur, Id_evenements FROM utilisateur,evenement WHERE utilisateur.Nom = '" + req.body.nom + "' AND utilisateur.Prenom = '" + req.body.prenom + "' AND evenement.Nom = '" + req.body.event + "'", function (error, rows) {
         if (!!error) {
             console.log('Erreur dans la requête');
             res.json({ message: "tu est déjà inscrit" });
@@ -120,7 +120,7 @@ var addarticle = function (req, res) {
                                 if (!!error) {
                                     console.log('Erreur dans la requête 44 ');
                                     co.connection.rollback(function () {
-
+                                        
                                     });
                                 }
                             });
@@ -191,7 +191,103 @@ var addarticle = function (req, res) {
 }
 
 
+var liker = function (req, res) {
+    co.connection.beginTransaction(function (error) {
+        co.connection.query("SELECT Id_utilisateur FROM utilisateur WHERE Nom = '" + req.body.nom + "' AND prenom = '"+ req.body.prenom +"'", function (error, rows) {
+            if (!!error) {
+                console.log('Erreur dans la requête 1 ');
+                co.connection.rollback(function () {
+                });
+            } else {
+                perso = rows[0].Id_utilisateur;
+                co.connection.query("SELECT Id_evenements FROM evenement WHERE Nom = '" + req.body.event + "'", function (error, rows) {
+                    if (!!error) {
+                        console.log('Erreur dans la requête 2 ');
+                        co.connection.rollback(function () {
 
+                        });
+                    } else {
+                        eve = rows[0].Id_evenements;
+                        console.log(perso);
+                        console.log(eve);
+                        co.connection.query("SELECT Aime FROM avis WHERE Id_utilisateur = " + perso + " AND Id_evenements = " + eve + "", function (error, rows) {
+                            if (!!error) {
+                                console.log('Erreur dans la requête 3');
+                                co.connection.rollback(function () {
+
+                                });
+                            } else if (rows[0] == null) {
+
+                                co.connection.query("INSERT INTO avis (Id_utilisateur,Id_evenements,Aime) VALUES (" + perso + "," + eve + ",1) ", function (error, rows) {
+                                    if (!!error) {
+                                        console.log('Erreur dans la requête 4 ');
+                                        co.connection.rollback(function () {
+
+                                        });
+                                    } else {
+                                        co.connection.commit(function (error) {
+                                            if (!!error) {
+                                                console.log('Erreur dans la requête 4.5 ');
+                                                co.connection.rollback(function () {
+                                                });
+                                            } else {
+                                                console.log('Requête réussie !\n');
+                                                res.json({ message: "Super like" });
+                                            }
+                                        });
+                                    }
+                                });
+
+                            } else {
+                                if (rows[0].Aime == 1) {
+                                    co.connection.query("UPDATE avis SET Aime = 0 WHERE Id_evenements = " + eve + " AND Id_utilisateur = " + perso + "",
+                                        function (error, rows) {
+                                            if (!!error) {
+                                                console.log('Erreur dans la requête 5 ');
+                                                co.connection.rollback(function () {
+                                                });
+                                            } else {
+                                                co.connection.commit(function (error) {
+                                                    if (!!error) {
+                                                        console.log('Erreur dans la requête 5.5 ');
+                                                        co.connection.rollback(function () {
+                                                        });
+                                                    } else {
+                                                        console.log('Requête réussie !\n');
+                                                        res.json({ message: "Super unlike" });
+                                                    }
+                                                });
+                                            }
+                                        });
+                                } else {
+                                    co.connection.query("UPDATE avis SET Aime = 1 WHERE Id_evenements = " + eve + " AND Id_utilisateur = " + perso + "",
+                                        function (error, rows) {
+                                            if (!!error) {
+                                                console.log('Erreur dans la requête 6 ');
+                                                co.connection.rollback(function () {
+                                                });
+                                            } else {
+                                                co.connection.commit(function (error) {
+                                                    if (!!error) {
+                                                        console.log('Erreur dans la requête 6.5 ');
+                                                        co.connection.rollback(function () {
+                                                        });
+                                                    } else {
+                                                        console.log('Requête réussie !\n');
+                                                        res.json({ message: "Super like" });
+                                                    }
+                                                });
+                                            }
+                                        });
+                                }
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    });
+}
 
 
 module.exports = {
@@ -199,7 +295,7 @@ module.exports = {
     article,
     addarticle,
     eventpar,
-    articlebyprix
+    articlebyprix,
+    liker
 };
-
 

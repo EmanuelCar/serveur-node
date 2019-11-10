@@ -44,6 +44,8 @@ myRouter.route('/article/adcategorie')
 
 myRouter.route('/event')
     .post(geting.eventpar)
-
+myRouter.route('/like')
+    .post(geting.liker)
+    
 // Nous demandons à l'application d'utiliser notre routeur
 app.use(myRouter);

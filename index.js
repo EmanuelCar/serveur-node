@@ -51,5 +51,9 @@ myRouter.route('/like')
 
 myRouter.route('/panier/ut')
     .post(geting.commandes)
+
+myRouter.route('/suppr')
+    .get(geting.suprphoto)
+    .post(geting.suprcomm)
 // Nous demandons à l'application d'utiliser notre routeur
 app.use(myRouter);

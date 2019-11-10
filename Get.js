@@ -359,11 +359,56 @@ var eventadd = function (req, res) {
                                 });
                         }
                     });
-                }
+            }
         });
     });
 }
 
+var suprcomm = function (req, res) {
+    co.connection.query("SELECT avis.Id_avis,avis.Aime FROM `avis` INNER JOIN evenement ON evenement.Id_evenements = avis.Id_evenements INNER JOIN utilisateur ON avis.Id_utilisateur = utilisateur.Id_utilisateur WHERE utilisateur.Nom = '" + req.body.nom + "' AND utilisateur.Prenom = '" + req.body.prenom + "' AND evenement.nom = '" + req.body.event + "' AND avis.Commentaire = '" + req.body.com + "'",
+        function (error, rows) {
+            if (!!error) {
+                console.log('Erreur dans la requête');
+            } else if (rows[0].Aime == 1) {
+                co.connection.query("UPDATE avis SET Commentaire = NULL WHERE Id_avis = " + rows[0].Id_avis + "",
+                    function (error, rows) {
+                        if (!!error) {
+                            console.log('Erreur dans la requête 3 ');
+                        } else {
+                            console.log('Requête réussie !\n');
+                            res.json({ message: "Commentaire suprimée" });
+                        }
+                    });
+            } else {
+                co.connection.query("DELETE FROM avis WHERE Id_avis = " + rows[0].Id_avis + "",
+                    function (error, rows) {
+                        if (!!error) {
+                            console.log('Erreur dans la requête 3 ');
+                        } else {
+                            console.log('Requête réussie !\n');
+                            res.json({ message: "Commentaire suprimée" });
+                        }
+
+                    });
+
+            }
+        });
+
+}
+
+var suprphoto = function (req, res) {
+    co.connection.query("DELETE FROM `image` WHERE URL = '" + req.query.URL + "'",
+        function (error, rows) {
+            if (!!error) {
+                console.log('Erreur dans la requête ');
+            } else {
+                console.log('Requête réussie !\n');
+                res.json({ message: "photo suprimée" });
+            }
+
+        });
+
+}
 
 module.exports = {
     add,
@@ -373,6 +418,8 @@ module.exports = {
     articlebyprix,
     liker,
     commandes,
-    eventadd
+    eventadd,
+    suprcomm,
+    suprphoto
 };
 

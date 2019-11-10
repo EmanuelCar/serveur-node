@@ -66,11 +66,9 @@ var userinsc = function (req, res) {
                 res.send('Le mot de passe doit contenir au moins 8 caractères !');
             } else if (!rgx.test(password)) {
                 res.send('Le mot de passe doit contenir au moins une lettre minuscule, une majuscule et un chiffre!');
-            }
-             else if(rows.length == 1) {
+            } else if(rows.length == 1) {
                 res.send('Un compte avec cette adresse existe déjà !');
-             }
-            else {
+            } else {
                 co.connection.query("INSERT INTO `utilisateur` (Nom, Prenom, Mail, Password, Id_Localisation) VALUES (?,?,?,?,?)", [nom, prenom, mail, password, lieu], function (error, rows) {
                     if (!!error) {
                         console.log("Erreur dans la requête d'envoi");
@@ -93,15 +91,21 @@ var addphoto = function (req, res) {
     var date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
 
     if (url && event) {
-        co.connection.query("SELECT URL, evenement.Nom AS évènement, evenement.Date_fin, utilisateur.Prenom, utilisateur.Nom FROM image INNER JOIN evenement ON image.Id_evenements = evenement.Id_evenements INNER JOIN participer ON participer.Id_evenements = evenement.Id_evenements INNER JOIN utilisateur ON participer.Id_Utilisateur = utilisateur.Id_Utilisateur WHERE evenement.Date_fin <= ? AND evenement.Nom = ?", [date, event], function (error, rows) {
-            console.log(date);
-            console.log(rows);
+        co.connection.query("SELECT evenement.Id_evenements, evenement.Nom AS évènement, evenement.Date_fin, utilisateur.Prenom, utilisateur.Nom FROM evenement INNER JOIN participer ON participer.Id_evenements = evenement.Id_evenements INNER JOIN utilisateur ON participer.Id_Utilisateur = utilisateur.Id_Utilisateur WHERE evenement.Date_fin <= ? AND evenement.Nom = ?", [date, event], function (error, rows) {
             if (!!error) {
                 console.log('Erreur dans la requête');
-            /*} else if (event != rows[0].évènement) {
-                res.send("veuillez sélectionner un évènement existant!");*/
+            } else if(rows.length == 0) {
+                res.send("L'évènement n'existe pas ou il n'est pas encore passé !");
+                //res.json({ message: "Bienvenu " + rows.Prenom + " " + rows.Nom + " !" + ", vous participez à :" + rows.évènement + ", l'évènement prend fin le : " + rows.Date_fin });
             } else {
-                res.json({ message: "Bienvenu " + rows.Prenom + " " + rows.Nom + " !" + ", vous participez à :" + rows.évènement + ", l'évènement prend fin le : " + rows.Date_fin });
+                var id_evenement = rows[0].Id_evenements;
+                co.connection.query("INSERT INTO `image` (URL, Id_evenements) VALUES (?, ?) ", [url, id_evenement], function (error, rows) {
+                    if (!!error) {
+                        console.log("Erreur dans la requête d'envoi");
+                    } else {
+                        res.send("L'image a bien été ajoutée !");
+                    }
+                })
             }
         })
     } else if (event) {

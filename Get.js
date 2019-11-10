@@ -38,7 +38,6 @@ var article = function (req, res) {
                 console.log('Erreur dans la requête');
             } else {
                 console.log('Requête réussie !\n');
-                console.log(rows);
                 for (var i = 0; i < rows.length; i++) {
                     res.write(JSON.stringify({
                         Nom: rows[i].Nom,
@@ -55,6 +54,28 @@ var article = function (req, res) {
 
 }
 
+var articlebyprix = function (req, res) {
+    co.connection.query("SELECT article.Nom,Stock,Prix,Description,categorie.Nom as Categorie,image.URL FROM `article` INNER JOIN categorie ON article.ID_Categorie = categorie.Id_Categorie INNER JOIN image ON image.Id_image = article.ID_image ORDER BY Prix ASC",
+        function (error, rows) {
+            if (!!error) {
+                console.log('Erreur dans la requête');
+            } else {
+                console.log('Requête réussie !\n');
+                for (var i = 0; i < rows.length; i++) {
+                    res.write(JSON.stringify({
+                        Nom: rows[i].Nom,
+                        Stock: rows[i].Stock,
+                        Prix: rows[i].Prix,
+                        Description: rows[i].Description,
+                        Categorie: rows[i].Categorie,
+                        URL: rows[i].URL,
+                    }));
+                }
+                res.end();
+            }
+        });
+
+}
 var eventpar = function (req, res) {
     co.connection.query("INSERT INTO participer (Id_utilisateur,Id_evenements) SELECT Id_utilisateur, Id_evenements FROM utilisateur,evenement WHERE utilisateur.Nom = '" + req.body.nom +"' AND utilisateur.Prenom = '" + req.body.prenom +"' AND evenement.Nom = '" +req.body.event +"'", function (error, rows) {
         if (!!error) {
@@ -177,7 +198,8 @@ module.exports = {
     add,
     article,
     addarticle,
-    eventpar
+    eventpar,
+    articlebyprix
 };
 
 

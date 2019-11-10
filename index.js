@@ -32,6 +32,9 @@ app.listen(port, function () {
     console.log("Mon serveur fonctionne sur http://" + hostname + ":" + port);
 });
 
+myRouter.route('/articleorder')
+    .get(geting.articlebyprix)
+
 myRouter.route('/article')
     .get(geting.article)
     .post(geting.addarticle)

@@ -33,7 +33,7 @@ app.listen(port, function () {
 });
 
 // Nous permet de récupérer les statuts
-myRouter.route('/bdd')
+myRouter.route('/statut')
     .post(metpost.statut)
 
 myRouter.route('/userco')
@@ -41,6 +41,9 @@ myRouter.route('/userco')
 
 myRouter.route('/userinsc')
     .post(metpost.userinsc)
+
+myRouter.route('/addphoto')
+    .post(metpost.addphoto)
 
     
 // Nous demandons à l'application d'utiliser notre routeur

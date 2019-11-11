@@ -276,7 +276,62 @@ var comment = function(req, res) {
     }
 }
 
-
+var suprarticle = function(req, res) {
+    var article = req.body.article;
+    var mail = req.body.mail;
+    if(mail && article){
+        co.connection.query("SELECT mail FROM utilisateur WHERE mail = ?", [mail], function(error, rows) {
+            if (!!error) {
+                console.log('Erreur dans la requête');
+            } else if(rows.length == 0){
+                res.send("Cet utilisateur n'existe pas !")
+            } else {
+                co.connection.query("SELECT Mail, Id_Statut FROM utilisateur WHERE Mail = ?", [mail], function(error, rows) {
+                    if (!!error) {
+                        console.log('Erreur dans la requête');
+                    } else if(rows[0].Id_Statut == 2){
+                        co.connection.query("SELECT Nom FROM article WHERE Nom = ?", [article], function(error, rows) {
+                            if (!!error) {
+                                console.log('Erreur dans la requête');
+                            } else if(rows.length == 0){
+                                res.send("Cet article n'existe pas !")
+                            } else {
+                                co.connection.query("DELETE FROM article WHERE Nom = ?", [article], function(error, rows) {
+                                    if (!!error) {
+                                        console.log('Erreur dans la requête');
+                                    } else {
+                                        res.send("L'article a bien été supprimé !");
+                                        co.connection.query("SET @num := 0; UPDATE article SET Id_Article = @num := (@num+1); ALTER TABLE article AUTO_INCREMENT = 1;", function(error, rows) {
+                                            if (!!error) {
+                                                console.log('Erreur dans la requête');
+                                            } else {
+                                                console.log("Id réinitialisé")
+                                            }
+                                        })
+                                    }
+                                })
+                            }
+                        })
+                    } else {
+                        res.send("Vous n'avez pas les droits pour supprimer un article !")
+                    }
+                })
+            }
+        })
+    } else if (mail) {
+        co.connection.query("SELECT mail FROM utilisateur WHERE mail = ?", [mail], function(error, rows) {
+            if (!!error) {
+                console.log('Erreur dans la requête');
+            } else if(rows.length == 0){
+                res.send("Cet utilisateur n'existe pas !")
+            } else {
+                res.send("Vous n'avez pas sélectionné d'article !")
+            }
+        })
+    } else {
+        res.send("Vous n'êtes pas connecté, vous ne pouvez pas supprimer d'article !")
+    }
+}
 
 module.exports = {
     statut,
@@ -286,6 +341,7 @@ module.exports = {
     recupphoto,
     participant,
     actuevent,
-    comment
+    comment,
+    suprarticle
     //tricat
 };

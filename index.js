@@ -42,10 +42,10 @@ myRouter.route('/user/connection')
 myRouter.route('/user/inscription')
     .post(metpost.userinsc)
 
-myRouter.route('/addphoto')
+myRouter.route('/photo/add')
     .post(metpost.addphoto)
 
-myRouter.route('/recupphoto')
+myRouter.route('/photo/recup')
     .post(metpost.recupphoto)
 
 myRouter.route('/participant')
@@ -56,6 +56,9 @@ myRouter.route('/actuevent')
 
 myRouter.route('/comment')
     .post(metpost.comment)
+
+myRouter.route('/suprarticle')
+    .post(metpost.suprarticle)
 
 /*myRouter.route('/tricat')
     .post(metpost.tricat)*/

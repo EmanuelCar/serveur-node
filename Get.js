@@ -104,7 +104,6 @@ var eventpar = function (req, res) {
 
 var addarticle = function (req, res) {
     var img = '';
-    
     co.connection.beginTransaction(function (error) {
         co.connection.query("SELECT Nom FROM article WHERE Nom = '" + req.body.nom + "'", function (error, rows) {
             if (!!error) {
@@ -423,6 +422,149 @@ var suprphoto = function (req, res) {
         });
 }
 
+var filtrecat = function (req, res) {
+    co.connection.query("SELECT article.Nom,Stock,Prix,Description,categorie.Nom as Categorie,image.URL FROM `article` INNER JOIN categorie ON article.ID_Categorie = categorie.Id_Categorie INNER JOIN image ON image.Id_image = article.ID_image ORDER BY article.Id_Categorie ASC",
+        function (error, rows) {
+            if (!!error) {
+                console.log('Erreur dans la requête  !\n');
+                res.json({ message: "echec de la requête" });
+            } else {
+                console.log('Requête réussie !\n');
+                for (var i = 0; i < rows.length; i++) {
+                    res.write(JSON.stringify({
+                        Nom: rows[i].Nom,
+                        Stock: rows[i].Stock,
+                        Prix: rows[i].Prix,
+                        Description: rows[i].Description,
+                        Categorie: rows[i].Categorie,
+                        URL: rows[i].URL,
+                    }));
+                }
+                res.end();
+            }
+        });
+}
+
+var panier = function (req, res) {
+    var mail = req.body.mail;
+    var article = req.body.article;
+    var com = "";
+    var quantite = req.body.quantite;
+    co.connection.beginTransaction(function (error) {
+        co.connection.query("SELECT Id_commande FROM commande INNER JOIN utilisateur ON utilisateur.Id_utilisateur = commande.Id_utilisateur WHERE utilisateur.mail = '" + mail + "' AND commande.Fini = 0",
+            function (error, rows) {
+                if (!!error) {
+                    console.log('Erreur dans la requête 1');
+                    co.connection.rollback(function () {
+                    });
+                    res.json({ message: "echec de la requête" });
+                } else if (rows[0] == null) {
+                    co.connection.query("INSERT INTO commande (Id_utilisateur,Fini) VALUES ((SELECT Id_utilisateur FROM utilisateur WHERE utilisateur.mail = '" + mail + "'),0) ", function (error, rows) {
+                        if (!!error) {
+                            console.log('Erreur dans la requête 2 ');
+                            co.connection.rollback(function () {
+                            });
+                        } else {
+                            co.connection.query("SELECT Id_commande FROM commande INNER JOIN utilisateur ON commande.Id_utilisateur = utilisateur.Id_utilisateur WHERE utilisateur.Mail = '" + mail + "' AND commande.fini = 0",
+                                function (error, rows) {
+                                    if (!!error) {
+                                        console.log('Erreur dans la requête 3');
+                                    } else {
+                                        com = rows[0].Id_commande;
+                                        co.connection.query("INSERT INTO acheter (Id_commande,Id_Article) SELECT Id_commande, Id_Article FROM commande,article WHERE article.Nom = '" + article + "' AND commande.Id_commande = " + com + "",
+                                            function (error, rows) {
+                                                if (!!error) {
+                                                    console.log('Erreur dans la requête 4 ');
+                                                    co.connection.rollback(function () {
+                                                    });
+                                                } else {
+                                                    co.connection.query("UPDATE acheter SET Quantite = " + quantite + " WHERE Id_commande = " + com + "",
+                                                        function (error, rows) {
+                                                            if (!!error) {
+                                                                console.log('Erreur dans la requête 4.5 ');
+                                                                co.connection.rollback(function () {
+                                                                });
+                                                            } else {
+                                                                co.connection.commit(function (error) {
+                                                                    if (!!error) {
+                                                                        console.log('Erreur dans la requête 5 ');
+                                                                        res.json({ message: "echec de la requête" });
+                                                                        co.connection.rollback(function () {
+                                                                        });
+                                                                    } else {
+                                                                        console.log('Requête réussie !\n');
+                                                                        res.json({ message: "Ajout de la commande" });
+                                                                    }
+                                                                });
+                                                            }
+                                                        });
+                                                }
+                                            });
+                                    }
+                                });
+                        }
+                    });
+
+                } else {
+                    com = rows[0].Id_commande;
+                    console.log(article);
+                    co.connection.query("SELECT acheter.Id_Article FROM acheter INNER JOIN article ON acheter.Id_Article = article.Id_Article WHERE article.Nom = '" + article + "' AND acheter.Id_commande = " + com + " ",
+                        function (error, rows) {
+                            if (!!error) {
+                                console.log('Erreur dans la requête 5.5');
+                            } else if (rows[0] == null) {
+                                co.connection.query("INSERT INTO acheter (Id_commande,Id_Article,Quantite) VALUES (" + com + ",(SELECT Id_Article FROM article WHERE article.Nom = '" + article + "'), " + quantite + ")",
+                                    function (error, rows) {
+                                        if (!!error) {
+                                            console.log('Erreur dans la requête 6 ');
+                                            co.connection.rollback(function () {
+                                            });
+                                        } else {
+                                            co.connection.commit(function (error) {
+                                                if (!!error) {
+                                                    console.log('Erreur dans la requête 7 ');
+                                                    co.connection.rollback(function () {
+                                                    });
+                                                } else {
+                                                    console.log('Requête réussie !\n');
+                                                    res.json({ message: "Ajout de la commande" });
+                                                }
+                                            });
+                                        }
+
+                                    });
+                            } else {
+                                article = rows[0].Id_Article;
+                                co.connection.query("UPDATE acheter SET Quantite = " + quantite + " WHERE Id_commande = " + com + " AND Id_article = " + article + "",
+                                    function (error, rows) {
+                                        if (!!error) {
+                                            console.log('Erreur dans la requête 8 ');
+                                            co.connection.rollback(function () {
+                                            });
+                                        } else {
+                                            co.connection.commit(function (error) {
+                                                if (!!error) {
+                                                    console.log('Erreur dans la requête 9 ');
+                                                    co.connection.rollback(function () {
+                                                    });
+                                                } else {
+                                                    console.log('Requête réussie !\n');
+                                                    res.json({ message: "Ajout de la commande" });
+                                                }
+                                            });
+
+                                        }
+                                    });
+
+                            }
+
+                        });
+                }
+            });
+    });
+}
+
+
 module.exports = {
     add,
     article,
@@ -433,6 +575,8 @@ module.exports = {
     commandes,
     eventadd,
     suprcomm,
-    suprphoto
+    suprphoto,
+    filtrecat,
+    panier
 };
 

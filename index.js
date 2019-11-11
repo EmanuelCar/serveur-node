@@ -31,7 +31,8 @@ co.connection.connect(function (error) {
 app.listen(port, function () {
     console.log("Mon serveur fonctionne sur http://" + hostname + ":" + port);
 });
-
+myRouter.route('/panier')
+    .post(geting.panier)
 myRouter.route('/articleorder')
     .get(geting.articlebyprix)
 
@@ -41,6 +42,7 @@ myRouter.route('/article')
 
 myRouter.route('/article/adcategorie')
     .post(geting.add)
+    .get(geting.filtrecat)
 
 myRouter.route('/event')
     .post(geting.eventpar)

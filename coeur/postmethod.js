@@ -285,13 +285,6 @@ var suprarticle = function(req, res) {
                                         console.log('Erreur dans la requête');
                                     } else {
                                         res.send("L'article a bien été supprimé !");
-                                        co.connection.query("SET @num := 0; UPDATE article SET Id_Article = @num := (@num+1); ALTER TABLE article AUTO_INCREMENT = 1;", function(error, rows) {
-                                            if (!!error) {
-                                                console.log('Erreur dans la requête');
-                                            } else {
-                                                console.log("Id réinitialisé")
-                                            }
-                                        })
                                     }
                                 })
                             }

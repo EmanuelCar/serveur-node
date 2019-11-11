@@ -44,16 +44,27 @@ var article = function (req, res) {
                 res.json({ message: "echec de la requête" });
             } else {
                 console.log('Requête réussie !\n');
+                res.write("{")
+                res.write('"' + 'Vente' + '"' + ": ")
+                res.write("[")
                 for (var i = 0; i < rows.length; i++) {
+                    var test = "Article" + " " + i;
+                    if (i != 0) {
+                        res.write(",");
+                    }
                     res.write(JSON.stringify({
-                        Nom: rows[i].Nom,
-                        Stock: rows[i].Stock,
-                        Prix: rows[i].Prix,
-                        Description: rows[i].Description,
-                        Categorie: rows[i].Categorie,
-                        URL: rows[i].URL,
+                        [test]: {
+                            Nom: rows[i].Nom,
+                            Stock: rows[i].Stock,
+                            Prix: rows[i].Prix,
+                            Description: rows[i].Description,
+                            Categorie: rows[i].Categorie,
+                            URL: rows[i].URL
+                        }
                     }));
                 }
+                res.write("]")
+                res.write("}")
                 res.end();
             }
         });

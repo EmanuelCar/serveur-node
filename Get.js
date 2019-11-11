@@ -7,28 +7,33 @@ app.use(bodyParser.json());
 
 
 var add = function (req, res) {
-    co.connection.query("SELECT Nom FROM categorie WHERE Nom = '" + req.body.cat + "'", function (error, rows) {
-        if (!!error) {
-            console.log('Erreur dans la requête 1 ');
-        } else if (rows[0] != null) {
-            console.log('Requête réussie !\n');
-            //console.log(rows);
-            res.json({ message: "Categorie deja existante" });
-        }
-        else {
-            co.connection.query("INSERT INTO categorie (Nom) VALUES ('" + req.body.cat + "');",
-                function (error, rows) {
-                    if (!!error) {
-                        console.log('Erreur dans la requête 2 ');
-                    } else {
-                        console.log('Requête réussie !\n');
-                        res.json({ message: "Ajout de la categorie d'article " + req.body.cat });
-
-                    }
-
-                });
-        }
-    });
+    cat = req.body.cat;
+    if (cat) {
+        co.connection.query("SELECT Nom FROM categorie WHERE Nom = '" + cat + "'", function (error, rows) {
+            if (!!error) {
+                console.log('Erreur dans la requête 1 ');
+                res.json({ message: "echec de la requête" });
+            } else if (rows[0] != null) {
+                console.log('Requête réussie !\n');
+                res.json({ message: "Categorie deja existante" });
+            }
+            else {
+                co.connection.query("INSERT INTO categorie (Nom) VALUES ('" + cat + "');",
+                    function (error, rows) {
+                        if (!!error) {
+                            console.log('Erreur dans la requête 2 ');
+                            res.json({ message: "echec de la requête" });
+                        } else {
+                            console.log('Requête réussie !\n');
+                            res.json({ message: "Ajout de la categorie d'article " + cat });
+                        }
+                    });
+            }
+        });
+    } else {
+        console.log('Erreur dans la requête 2 ');
+        res.json({ message: "Veuillez remplir la categorie !" });
+    }
 }
 
 var article = function (req, res) {
@@ -36,6 +41,7 @@ var article = function (req, res) {
         function (error, rows) {
             if (!!error) {
                 console.log('Erreur dans la requête');
+                res.json({ message: "echec de la requête" });
             } else {
                 console.log('Requête réussie !\n');
                 for (var i = 0; i < rows.length; i++) {
@@ -51,14 +57,14 @@ var article = function (req, res) {
                 res.end();
             }
         });
-
 }
 
 var articlebyprix = function (req, res) {
     co.connection.query("SELECT article.Nom,Stock,Prix,Description,categorie.Nom as Categorie,image.URL FROM `article` INNER JOIN categorie ON article.ID_Categorie = categorie.Id_Categorie INNER JOIN image ON image.Id_image = article.ID_image ORDER BY Prix ASC",
         function (error, rows) {
             if (!!error) {
-                console.log('Erreur dans la requête');
+                console.log('Requête réussie !\n');
+                res.json({ message: "echec de la requête" });
             } else {
                 console.log('Requête réussie !\n');
                 for (var i = 0; i < rows.length; i++) {
@@ -74,23 +80,31 @@ var articlebyprix = function (req, res) {
                 res.end();
             }
         });
-
 }
+
 var eventpar = function (req, res) {
-    co.connection.query("INSERT INTO participer (Id_utilisateur,Id_evenements) SELECT Id_utilisateur, Id_evenements FROM utilisateur,evenement WHERE utilisateur.Nom = '" + req.body.nom + "' AND utilisateur.Prenom = '" + req.body.prenom + "' AND evenement.Nom = '" + req.body.event + "'", function (error, rows) {
-        if (!!error) {
-            console.log('Erreur dans la requête');
-            res.json({ message: "tu est déjà inscrit" });
-        } else {
-            console.log('Requête réussie !\n');
-            //console.log(rows);
-            res.json({ message: "tu est bien inscrit" });
-        }
-    });
+    nom = req.body.nom;
+    prenom = req.body.prenom;
+    event = req.body.event;
+    if (nom && prenom && event) {
+        co.connection.query("INSERT INTO participer (Id_utilisateur,Id_evenements) SELECT Id_utilisateur, Id_evenements FROM utilisateur,evenement WHERE utilisateur.Nom = '" + nom + "' AND utilisateur.Prenom = '" + prenom + "' AND evenement.Nom = '" + event + "'", function (error, rows) {
+            if (!!error) {
+                console.log('Erreur dans la requête');
+                res.json({ message: "erreur de la requête" });
+            } else {
+                console.log('Requête réussie !\n');
+                res.json({ message: "tu est bien inscrit" });
+            }
+        });
+    } else {
+        console.log('Erreur dans la requête');
+        res.json({ message: "Veuillez remplir tout les champs !" });
+    }
 }
 
 var addarticle = function (req, res) {
     var img = '';
+    
     co.connection.beginTransaction(function (error) {
         co.connection.query("SELECT Nom FROM article WHERE Nom = '" + req.body.nom + "'", function (error, rows) {
             if (!!error) {
@@ -407,7 +421,6 @@ var suprphoto = function (req, res) {
             }
 
         });
-
 }
 
 module.exports = {

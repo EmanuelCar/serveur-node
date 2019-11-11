@@ -36,10 +36,10 @@ app.listen(port, function () {
 myRouter.route('/statut')
     .post(metpost.statut)
 
-myRouter.route('/userco')
+myRouter.route('/user/connection')
     .post(metpost.userco)
 
-myRouter.route('/userinsc')
+myRouter.route('/user/inscription')
     .post(metpost.userinsc)
 
 myRouter.route('/addphoto')
@@ -53,6 +53,12 @@ myRouter.route('/participant')
 
 myRouter.route('/actuevent')
     .post(metpost.actuevent)
+
+myRouter.route('/comment')
+    .post(metpost.comment)
+
+/*myRouter.route('/tricat')
+    .post(metpost.tricat)*/
     
 // Nous demandons à l'application d'utiliser notre routeur
 app.use(myRouter);

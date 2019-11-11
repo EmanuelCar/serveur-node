@@ -7,6 +7,15 @@ var bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
+/*app.use(session({
+    secret: 'arft36587rsnj3rr4u5j3',
+    name: 'cookie',
+    proxy: true,
+    resave: true,
+    saveUninitialized: true,
+    loggedin: false
+}))*/
+
 var statut = function (req, res) {
     co.connection.query("SELECT " + req.body.col + " FROM statut", function (error, rows) {
         if (!!error) {
@@ -185,6 +194,90 @@ var actuevent = function(req, res) {
     })
 }
 
+/*var tricat = function(req, res) {
+    var cat = req.body.cat;
+    if(cat){
+        co.connection.query("SELECT article.Nom, Prix, Description, image.URL FROM article INNER JOIN categorie ON article.Id_Categorie = categorie.Id_Categorie INNER JOIN image ON article.Id_image = image.Id_image WHERE categorie.Nom = ?", [cat], function(error, rows){
+            if (!!error) {
+                console.log('Erreur dans la requête');
+            } else {
+                console.log(rows.length);
+            }
+        })
+    } else {
+        res.send("veuillez sélectionner une catégorie !")
+    }
+}
+*/
+
+var comment = function(req, res) {
+    var commentaire = req.body.commentaire;
+    var mail = req.body.mail;
+    var event = req.body.event;
+    var today = new Date();
+    var date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
+
+    if(mail && commentaire && event) {
+        co.connection.query("SELECT Mail, Id_utilisateur FROM utilisateur WHERE Mail = ?", [mail], function(error, rows) {
+            if (!!error) {
+                console.log('Erreur dans la requête');
+            } else if(rows.length == 0){
+                res.send("Cet utilisateur n'existe pas !")
+            } else {
+                var id_ut = rows[0].Id_utilisateur
+                co.connection.query("SELECT Nom, Id_evenements FROM evenement WHERE Nom = ? AND Date_fin <= ?", [event, date], function(error, rows) {
+                    if (!!error) {
+                        console.log('Erreur dans la requête');
+                    } else if(rows.length == 0){
+                        res.send("Cet évènement n'existe pas ou n'est pas encore passé !")
+                    } else {
+                        var id_ev = rows[0].Id_evenements
+                        co.connection.query("INSERT INTO avis (Commentaire, Id_utilisateur, Id_evenements) VALUE (?, ?, ?)", [commentaire, id_ut, id_ev], function(error, rows) {
+                            if (!!error) {
+                                console.log('Erreur dans la requête');
+                            } else {
+                                res.send("Votre commentaire a bien été ajouté !")
+                            }
+                        })
+                    }
+                })
+            }
+        })
+    } else if(mail && event) {
+        co.connection.query("SELECT Mail FROM utilisateur WHERE Mail = ?", [mail], function(error, rows) {
+            if (!!error) {
+                console.log('Erreur dans la requête');
+            } else if(rows.length == 0){
+                res.send("Cet utilisateur n'existe pas !")
+            } else {
+                co.connection.query("SELECT Nom FROM evenement WHERE Nom = ?", [event], function(error, rows) {
+                    if (!!error) {
+                        console.log('Erreur dans la requête');
+                    } else if(rows.length == 0){
+                        res.send("Cet évènement n'existe pas !")
+                    } else {
+                        res.send("Vous n'avez pas entré de commentaire !");
+                    }
+                })
+            }
+        })
+    } else if(mail){
+        co.connection.query("SELECT mail FROM utilisateur WHERE mail = ?", [mail], function(error, rows) {
+            if (!!error) {
+                console.log('Erreur dans la requête');
+            } else if(rows.length == 0){
+                res.send("Cet utilisateur n'existe pas !")
+            } else {
+                res.send("Vous n'avez pas sélectionné d'évènement !")
+            }
+        })
+    } else {
+        res.send("Vous n'êtes pas connecté, vous ne pouvez pas laisser de commentaire !")
+    }
+}
+
+
+
 module.exports = {
     statut,
     userco,
@@ -192,5 +285,7 @@ module.exports = {
     addphoto,
     recupphoto,
     participant,
-    actuevent
+    actuevent,
+    comment
+    //tricat
 };

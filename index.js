@@ -60,8 +60,11 @@ myRouter.route('/comment')
 myRouter.route('/suprarticle')
     .post(metpost.suprarticle)
 
-/*myRouter.route('/tricat')
-    .post(metpost.tricat)*/
+myRouter.route('/passcommand')
+    .post(metpost.passcommand)
+
+myRouter.route('/best3')
+    .post(metpost.best3)
     
 // Nous demandons à l'application d'utiliser notre routeur
 app.use(myRouter);

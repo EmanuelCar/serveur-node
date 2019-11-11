@@ -194,22 +194,6 @@ var actuevent = function(req, res) {
     })
 }
 
-/*var tricat = function(req, res) {
-    var cat = req.body.cat;
-    if(cat){
-        co.connection.query("SELECT article.Nom, Prix, Description, image.URL FROM article INNER JOIN categorie ON article.Id_Categorie = categorie.Id_Categorie INNER JOIN image ON article.Id_image = image.Id_image WHERE categorie.Nom = ?", [cat], function(error, rows){
-            if (!!error) {
-                console.log('Erreur dans la requête');
-            } else {
-                console.log(rows.length);
-            }
-        })
-    } else {
-        res.send("veuillez sélectionner une catégorie !")
-    }
-}
-*/
-
 var comment = function(req, res) {
     var commentaire = req.body.commentaire;
     var mail = req.body.mail;
@@ -333,6 +317,87 @@ var suprarticle = function(req, res) {
     }
 }
 
+var passcommand = function (req, res) {
+    var mail = req.body.mail;
+    if(mail) {
+        co.connection.query("SELECT Mail, Id_utilisateur FROM utilisateur WHERE Mail = ?", [mail], function(error, rows) {
+            if (!!error) {
+                console.log('Erreur dans la requête');
+            } else if(rows.length == 0){
+                res.send("Cet utilisateur n'existe pas !")
+            } else {
+                var id_ut = rows[0].Id_utilisateur;
+                co.connection.query("SELECT Id_commande FROM commande WHERE Id_utilisateur = ?", [rows[0].Id_utilisateur], function(error, rows) {
+                    if (!!error) {
+                        console.log('Erreur dans la requête');
+                    } else if(rows.length == 0){
+                        res.send("Vous n'avez pas de commande en cours !")
+                    } else {
+                        co.connection.query("UPDATE commande SET Fini = TRUE WHERE Id_utilisateur = ?", [id_ut], function(error, rows) {
+                            if (!!error) {
+                                console.log('Erreur dans la requête');
+                            } else {
+                                res.send("La commande a bien été passée !")
+                            }
+                        })
+                    }
+                })
+            }
+        })
+    } else {
+        res.send("Veuillez vous connecter !")
+    }
+}
+
+var best3 = function(req, res) {
+    co.connection.query("SELECT article.Nom, SUM(Quantite) AS Quantité_totale FROM acheter INNER JOIN article ON acheter.Id_Article = article.Id_Article INNER JOIN commande ON acheter.Id_commande = commande.Id_commande WHERE commande.Fini = TRUE GROUP BY article.Nom ORDER BY Quantité_totale DESC LIMIT 3", function(error, rows) {
+        if (!!error) {
+            console.log('Erreur dans la requête');
+        } else if(rows.length == 0){
+            res.send("Il n'y a pas encore d'articles commandé !")
+        } else if(rows.length == 1) {
+            res.json({
+                "Article 1":
+                {
+                    "Nom": rows[0].Nom,
+                    "Quantité": rows[0].Quantité_totale
+                }
+            })
+        } else if(rows.length == 2) {
+            res.json({
+                "Article 1":
+                {
+                    "Nom": rows[0].Nom,
+                    "Quantité": rows[0].Quantité_totale
+                },
+                "Article 2":
+                {
+                    "Nom": rows[1].Nom,
+                    "Quantité": rows[1].Quantité_totale
+                }
+            })
+        } else {
+            res.json({
+                "Article 1":
+                {
+                    "Nom": rows[0].Nom,
+                    "Quantité": rows[0].Quantité_totale
+                },
+                "Article 2":
+                {
+                    "Nom": rows[1].Nom,
+                    "Quantité": rows[1].Quantité_totale
+                },
+                "Article 3":
+                {
+                    "Nom": rows[2].Nom,
+                    "Quantité": rows[2].Quantité_totale
+                }
+            })
+        }
+    })
+}
+
 module.exports = {
     statut,
     userco,
@@ -342,6 +407,7 @@ module.exports = {
     participant,
     actuevent,
     comment,
-    suprarticle
-    //tricat
+    suprarticle,
+    passcommand,
+    best3
 };

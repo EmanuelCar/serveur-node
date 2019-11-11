@@ -153,33 +153,41 @@ var recupphoto = function(req, res){
 var participant = function(req, res) {
     var event = req.body.event;
     if(event) {
-        co.connection.query("SELECT evenement.Nom AS évènement, utilisateur.Nom, utilisateur.Prenom FROM participer INNER JOIN evenement ON participer.Id_evenements = evenement.Id_evenements INNER JOIN utilisateur ON participer.Id_Utilisateur = utilisateur.Id_Utilisateur WHERE evenement.Nom = ?", [event], function(error, rows) {
+        co.connection.query("SELECT Nom FROM evenement WHERE Nom = ?", [event], function(error, rows) {
             if (!!error) {
                 console.log('Erreur dans la requête');
             } else if(rows.length == 0){
                 res.json({message: "veuillez sélectionner un évènement existant !"})
             } else {
-                res.write("{");
-                res.write('"évènement"' + ": " + '"' + rows[0].évènement + '"' + ",");
-                res.write('"participants"' + ": ");
-                res.write("[");
-                numRows = rows.length;
-                for (var i = 0; i < numRows; i++) {
-                    var nom = "Nom" + " " + (i+1);
-                    var prenom = "Prenom" + " " + (i+1);
-                    if(i != 0){
-                        res.write(",");
+                co.connection.query("SELECT evenement.Nom AS évènement, utilisateur.Nom, utilisateur.Prenom FROM participer INNER JOIN evenement ON participer.Id_evenements = evenement.Id_evenements INNER JOIN utilisateur ON participer.Id_Utilisateur = utilisateur.Id_Utilisateur WHERE evenement.Nom = ?", [event], function(error, rows) {
+                if (!!error) {
+                    console.log('Erreur dans la requête');
+                } else if(rows.length == 0){
+                    res.json({message: "Il n'y a pas encore de participant à cet évènement !"})
+                } else {
+                    res.write("{");
+                    res.write('"évènement"' + ": " + '"' + rows[0].évènement + '"' + ",");
+                    res.write('"participants"' + ": ");
+                    res.write("[");
+                    numRows = rows.length;
+                    for (var i = 0; i < numRows; i++) {
+                        var nom = "Nom" + " " + (i+1);
+                        var prenom = "Prenom" + " " + (i+1);
+                        if(i != 0){
+                            res.write(",");
+                        }
+                        res.write(JSON.stringify({
+                            [nom]: rows[i].Nom,
+                            [prenom]: rows[i].Prenom
+                        }));
                     }
-                    res.write(JSON.stringify({
-                        [nom]: rows[i].Nom,
-                        [prenom]: rows[i].Prenom
-                    }));
+                    res.write("]");
+                    res.write("}");
+                    res.end();
                 }
-                res.write("]");
-                res.write("}");
-                res.end();
-            }
-        })
+            })
+        }
+    })
     } else {
         res.json({message: "veuillez sélectionner un évènement !"})
     }

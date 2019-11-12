@@ -1,10 +1,11 @@
 var co = require('./bddconnect');
 var express = require('express');
-var session = require('express-session');
+var bcrypt = require('bcrypt');
+var jwt = require('./token.js');
 
 var app = express();
 var bodyParser = require("body-parser");
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 /*app.use(session({
@@ -23,14 +24,11 @@ var statut = function (req, res) {
             res.json({ message: "Erreur dans la requête !" });
         } else {
             console.log('Requête réussie !');
-            numRows = rows.length;
-            for (var i = 0; i < numRows; i++) {
-                res.write(JSON.stringify({
-                    id: rows[i].Id_Statut,
-                    Roles: rows[i].Roles,
-                }));
-            }
-            res.end();
+            const roles = rows.map((row) => ({
+                id: row.Id_Statut,
+                Roles: row.Roles
+            }))
+            res.json({ roles });
         }
     });
 }
@@ -40,23 +38,27 @@ var userco = function (req, res) {
     var password = req.body.password;
 
     if (mail && password) {
-        co.connection.query("SELECT Id_utilisateur, Nom, Prenom, Mail, Password, statut.Roles, localisation.Lieux FROM utilisateur INNER JOIN statut ON utilisateur.Id_Statut = statut.Id_Statut INNER JOIN localisation ON utilisateur.Id_Localisation = localisation.Id_Localisation WHERE Mail = ? AND Password = ?", [mail, password], function (error, rows) {
+        co.connection.query("SELECT Id_utilisateur, Nom, Prenom, Mail, Password, statut.Roles, localisation.Lieux FROM utilisateur INNER JOIN statut ON utilisateur.Id_Statut = statut.Id_Statut INNER JOIN localisation ON utilisateur.Id_Localisation = localisation.Id_Localisation WHERE Mail = ?", [mail], function (error, rows) {
             if (!!error) {
                 console.log('Erreur dans la requête');
                 res.json({ message: "Erreur dans la requête !" });
             } else if (rows.length > 0) {
-                console.log('Requête réussie !');
-                //req.session.loggedin = true;
-                //req.session.mail = mail;
-                res.json({
-                    "Prenom": rows[0].Prenom,
-                    "Nom": rows[0].Nom,
-                    "Role": rows[0].Roles,
-                    "Localisation": rows[0].Lieux
+                bcrypt.compare(password, rows[0].Password, function (errBycrypt, resBycrypt) {
+                    if (resBycrypt) {
+                        console.log('Requête réussie !');
+                        //req.session.loggedin = true;
+                        //req.session.mail = mail;
+                        res.json({
+                            Id_user: rows[0].Id_utilisateur,
+                            token: jwt.generateTokenForUser(rows[0])
+                        })
+                    } else {
+                        res.json({ message: 'Mot de passe incorrect !' });
+                    }
+                    //res.redirect('/home');
                 })
-                //res.redirect('/home');
             } else {
-                res.json({ message: 'Mail ou Mot de passe incorrect !' });
+                res.json({ message: 'Mail incorrect !' });
             }
 
         });
@@ -85,13 +87,17 @@ var userinsc = function (req, res) {
             } else if (rows.length == 1) {
                 res.json({ message: 'Un compte avec cette adresse existe déjà !' });
             } else {
-                co.connection.query("INSERT INTO `utilisateur` (Nom, Prenom, Mail, Password, Id_Localisation) VALUES (?,?,?,?,?)", [nom, prenom, mail, password, lieu], function (error, rows) {
-                    if (!!error) {
-                        console.log("Erreur dans la requête d'envoi");
-                        res.json({ message: "Erreur dans la requête !" });
-                    } else {
-                        res.json({ message: 'Compte créé avec succès !' });
-                    }
+                bcrypt.hash(password, 5, function (err, bcryptedPassword) {
+                    co.connection.query("INSERT INTO `utilisateur` (Nom, Prenom, Mail, Password, Id_Localisation) VALUES (?,?,?,?,?)", [nom, prenom, mail, bcryptedPassword, lieu], function (error, rows) {
+                        if (!!error) {
+                            console.log("Erreur dans la requête d'envoi");
+                            res.json({ message: "Erreur dans la requête !" });
+                        } else {
+                            res.json({
+                                message: 'Compte créé avec succès !',
+                            });
+                        }
+                    })
                 })
             }
         })
@@ -140,19 +146,11 @@ var recupphoto = function (req, res) {
             res.json({ message: "Erreur dans la requête !" });
         } else {
             console.log('Requête réussie !');
-            res.write("[");
             numRows = rows.length;
-            for (var i = 0; i < numRows; i++) {
-                if (i != 0) {
-                    res.write(",");
-                }
-                var test = "URL" + " " + (i + 1);
-                res.write(JSON.stringify({
-                    [test]: rows[i].URL
-                }));
-            }
-            res.write("]");
-            res.end();
+            const photos = rows.map((row) => ({
+                URL: row.URL,
+            }))
+            res.json({ photos });
         }
     });
 }
@@ -174,25 +172,11 @@ var participant = function (req, res) {
                     } else if (rows.length == 0) {
                         res.json({ message: "Il n'y a pas encore de participant à cet évènement !" })
                     } else {
-                        res.write("{");
-                        res.write('"évènement"' + ": " + '"' + rows[0].évènement + '"' + ",");
-                        res.write('"participants"' + ": ");
-                        res.write("[");
-                        numRows = rows.length;
-                        for (var i = 0; i < numRows; i++) {
-                            var nom = "Nom" + " " + (i + 1);
-                            var prenom = "Prenom" + " " + (i + 1);
-                            if (i != 0) {
-                                res.write(",");
-                            }
-                            res.write(JSON.stringify({
-                                [nom]: rows[i].Nom,
-                                [prenom]: rows[i].Prenom
-                            }));
-                        }
-                        res.write("]");
-                        res.write("}");
-                        res.end();
+                        const participants = rows.map((row) => ({
+                            Nom: row.Nom,
+                            Prenom: row.Prenom,
+                        }))
+                        res.json({ participants });
                     }
                 })
             }
@@ -205,34 +189,63 @@ var participant = function (req, res) {
 var actuevent = function (req, res) {
     var today = new Date();
     var date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
-
-    co.connection.query("SELECT Nom, Description, Date_debut, Date_fin, localisation.Lieux FROM evenement INNER JOIN localisation ON evenement.Id_Localisation = localisation.Id_Localisation WHERE Date_fin >= ?", [date], function (error, rows) {
-        if (!!error) {
-            console.log('Erreur dans la requête');
-            res.json({ message: "Erreur dans la requête !" });
-        } else {
-            res.write("{");
-            res.write('"Évènements"' + ": ");
-            res.write("[");
-            numRows = rows.length;
-            for (var i = 0; i < numRows; i++) {
-                var event = "Évènement" + " " + (i + 1);
-                if (i != 0) {
-                    res.write(",");
-                }
-                res.write(JSON.stringify({
-                    [event]: rows[i].Nom,
-                    Description: rows[i].Description,
-                    "Date de début": rows[i].Date_debut,
-                    "Date de fin": rows[i].Date_fin,
-                    Lieu: rows[i].Lieux
-                }));
+    var lieu = req.body.lieu;
+    if (lieu) {
+        co.connection.query("SELECT Lieux FROM localisation WHERE Lieux = ?", [lieu], function (error, rows) {
+            if (rows.length == 0) {
+                res.json({ message: "Veuillez sélectionner une localisation existante !" });
+            } else {
+                co.connection.query("SELECT Nom, Description, Date_debut, Date_fin, localisation.Lieux FROM evenement INNER JOIN localisation ON evenement.Id_Localisation = localisation.Id_Localisation WHERE Date_fin >= ? AND localisation.Lieux = ?", [date, lieu], function (error, rows) {
+                    if (!!error) {
+                        console.log('Erreur dans la requête');
+                        res.json({ message: "Erreur dans la requête !" });
+                    } else {
+                        const évènements = rows.map((row) => ({
+                            évènement: row.Nom,
+                            Description: row.Description,
+                            "Date de début": row.Date_debut,
+                            "Date de fin": row.Date_fin,
+                            Lieu: row.Lieux
+                        }))
+                        res.json({ évènements });
+                    }
+                })
             }
-            res.write("]");
-            res.write("}");
-            res.end();
-        }
-    })
+        })
+    } else {
+        res.json({ message: "Veuillez sélectionner un lieu !" });
+    }
+}
+
+var pactuevent = function (req, res) {
+    var today = new Date();
+    var date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
+    var lieu = req.body.lieu;
+    if (lieu) {
+        co.connection.query("SELECT Lieux FROM localisation WHERE Lieux = ?", [lieu], function (error, rows) {
+            if (rows.length == 0) {
+                res.json({ message: "Veuillez sélectionner une localisation existante !" });
+            } else {
+                co.connection.query("SELECT Nom, Description, Date_debut, Date_fin, localisation.Lieux FROM evenement INNER JOIN localisation ON evenement.Id_Localisation = localisation.Id_Localisation WHERE Date_fin < ? AND localisation.Lieux = ?", [date, lieu], function (error, rows) {
+                    if (!!error) {
+                        console.log('Erreur dans la requête');
+                        res.json({ message: "Erreur dans la requête !" });
+                    } else {
+                        const évènements = rows.map((row) => ({
+                            évènement: row.Nom,
+                            Description: row.Description,
+                            "Date de début": row.Date_debut,
+                            "Date de fin": row.Date_fin,
+                            Lieu: row.Lieux
+                        }))
+                        res.json({ évènements });
+                    }
+                })
+            }
+        })
+    } else {
+        res.json({ message: "Veuillez sélectionner un lieu !" });
+    }
 }
 
 var comment = function (req, res) {
@@ -398,53 +411,67 @@ var passcommand = function (req, res) {
 }
 
 var best3 = function (req, res) {
-    co.connection.query("SELECT article.Nom, SUM(Quantite) AS Quantité_totale FROM acheter INNER JOIN article ON acheter.Id_Article = article.Id_Article INNER JOIN commande ON acheter.Id_commande = commande.Id_commande WHERE commande.Fini = TRUE GROUP BY article.Nom ORDER BY Quantité_totale DESC LIMIT 3", function (error, rows) {
-        if (!!error) {
-            console.log('Erreur dans la requête');
-            res.json({ message: "Erreur dans la requête !" });
-        } else if (rows.length == 0) {
-            res.json({ message: "Il n'y a pas encore d'articles commandé !" })
-        } else if (rows.length == 1) {
-            res.json({
-                "Article 1":
-                {
-                    "Nom": rows[0].Nom,
-                    "Quantité": rows[0].Quantité_totale
-                }
-            })
-        } else if (rows.length == 2) {
-            res.json({
-                "Article 1":
-                {
-                    "Nom": rows[0].Nom,
-                    "Quantité": rows[0].Quantité_totale
-                },
-                "Article 2":
-                {
-                    "Nom": rows[1].Nom,
-                    "Quantité": rows[1].Quantité_totale
-                }
-            })
-        } else {
-            res.json({
-                "Article 1":
-                {
-                    "Nom": rows[0].Nom,
-                    "Quantité": rows[0].Quantité_totale
-                },
-                "Article 2":
-                {
-                    "Nom": rows[1].Nom,
-                    "Quantité": rows[1].Quantité_totale
-                },
-                "Article 3":
-                {
-                    "Nom": rows[2].Nom,
-                    "Quantité": rows[2].Quantité_totale
-                }
-            })
-        }
-    })
+    var lieu = req.body.lieu;
+    if (lieu) {
+        co.connection.query("SELECT Lieux FROM localisation WHERE Lieux = ?", [lieu], function (error, rows) {
+            if (!!error) {
+                console.log('Erreur dans la requête');
+                res.json({ message: "Erreur dans la requête !" });
+            } else if (rows.length == 0) {
+                res.json({ message: "Veuillez sélectionner une localisation valide !" })
+            } else {
+                co.connection.query("SELECT article.Nom, SUM(Quantite) AS Quantité_totale FROM acheter INNER JOIN article ON acheter.Id_Article = article.Id_Article INNER JOIN provenir ON provenir.Id_article = article.Id_article INNER JOIN localisation ON localisation.Id_Localisation = provenir.Id_Localisation INNER JOIN commande ON acheter.Id_commande = commande.Id_commande WHERE commande.Fini = TRUE AND localisation.Lieux = ? GROUP BY article.Nom ORDER BY Quantité_totale DESC LIMIT 3", [lieu], function (error, rows) {
+                    if (!!error) {
+                        console.log('Erreur dans la requête');
+                        res.json({ message: "Erreur dans la requête !" });
+                    } else if (rows.length == 0) {
+                        res.json({ message: "Il n'y a pas encore d'articles commandé !" })
+                    } else if (rows.length == 1) {
+                        res.json({
+                            "Article 1":
+                            {
+                                "Nom": rows[0].Nom,
+                                "Quantité": rows[0].Quantité_totale
+                            }
+                        })
+                    } else if (rows.length == 2) {
+                        res.json({
+                            "Article 1":
+                            {
+                                "Nom": rows[0].Nom,
+                                "Quantité": rows[0].Quantité_totale
+                            },
+                            "Article 2":
+                            {
+                                "Nom": rows[1].Nom,
+                                "Quantité": rows[1].Quantité_totale
+                            }
+                        })
+                    } else {
+                        res.json({
+                            "Article 1":
+                            {
+                                "Nom": rows[0].Nom,
+                                "Quantité": rows[0].Quantité_totale
+                            },
+                            "Article 2":
+                            {
+                                "Nom": rows[1].Nom,
+                                "Quantité": rows[1].Quantité_totale
+                            },
+                            "Article 3":
+                            {
+                                "Nom": rows[2].Nom,
+                                "Quantité": rows[2].Quantité_totale
+                            }
+                        })
+                    }
+                })
+            }
+        })
+    } else {
+        res.json({ message: "Veuillez saisir une localisation" });
+    }
 }
 
 module.exports = {
@@ -458,5 +485,6 @@ module.exports = {
     comment,
     suprarticle,
     passcommand,
-    best3
+    best3,
+    pactuevent
 };

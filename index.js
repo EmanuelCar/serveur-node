@@ -12,7 +12,7 @@ var app = express();
 var co = require('./bddconnect');
 
 var bodyParser = require("body-parser");
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 
@@ -82,6 +82,9 @@ myRouter.route('/participant')
 
 myRouter.route('/event/actuel')
     .post(metpost.actuevent)
+
+myRouter.route('/event/passe')
+    .post(metpost.pactuevent)
 
 myRouter.route('/avis/comment')
     .post(metpost.comment)

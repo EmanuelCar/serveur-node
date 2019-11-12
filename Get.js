@@ -2,7 +2,7 @@ var co = require('./bddconnect');
 var express = require('express');
 var app = express();
 var bodyParser = require("body-parser");
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 
@@ -31,83 +31,63 @@ var add = function (req, res) {
             }
         });
     } else {
-        console.log('Erreur dans la requête 2 ');
+        console.log('Erreur dans la requête ');
         res.json({ message: "Veuillez remplir la categorie !" });
     }
 }
 
 var article = function (req, res) {
     var lieux = req.query.lieux;
-    if (lieux){
-    co.connection.query("SELECT article.Nom,Stock,Prix,Description,categorie.Nom as Categorie,image.URL FROM `article` INNER JOIN categorie ON article.ID_Categorie = categorie.Id_Categorie INNER JOIN image ON image.Id_image = article.ID_image INNER JOIN provenir ON provenir.Id_article = article.Id_article INNER JOIN Localisation ON Localisation.Id_Localisation = Provenir.Id_Localisation WHERE Localisation.Lieux = '" + lieux + "'",
-        function (error, rows) {
-            if (!!error) {
-                console.log('Erreur dans la requête');
-                res.json({ message: "echec de la requête" });
-            } else {
-                console.log('Requête réussie !\n');
-                res.write("{")
-                res.write('"' + 'Vente' + '"' + ": ")
-                res.write("[")
-                for (var i = 0; i < rows.length; i++) {
-                    var test = "Article" + " " + i;
-                    if (i != 0) {
-                        res.write(",");
-                    }
-                    res.write(JSON.stringify({
-                        [test]: {
-                            Nom: rows[i].Nom,
-                            Stock: rows[i].Stock,
-                            Prix: rows[i].Prix,
-                            Description: rows[i].Description,
-                            Categorie: rows[i].Categorie,
-                            URL: rows[i].URL
-                        }
-                    }));
+    if (lieux) {
+        co.connection.query("SELECT article.Nom,Stock,Prix,Description,categorie.Nom as Categorie,image.URL FROM `article` INNER JOIN categorie ON article.ID_Categorie = categorie.Id_Categorie INNER JOIN image ON image.Id_image = article.ID_image INNER JOIN provenir ON provenir.Id_article = article.Id_article INNER JOIN Localisation ON Localisation.Id_Localisation = Provenir.Id_Localisation WHERE Localisation.Lieux = '" + lieux + "'",
+            function (error, rows) {
+                if (!!error) {
+                    console.log('Erreur dans la requête');
+                    res.json({ message: "echec de la requête" });
+                } else {
+                    console.log('Requête réussie !\n');
+                    const articles = rows.map((row) => ({
+                        Nom: row.Nom,
+                        Stock: row.Stock,
+                        Prix: row.Prix,
+                        Description: row.Description,
+                        Categorie: row.Categorie,
+                        URL: row.URL
+                    }))
+                    res.json({ articles });
                 }
-                res.write("]")
-                res.write("}")
-                res.end();
-            }
-        });
+            });
     } else {
-        console.log('Erreur dans la requête 2 ');
+        console.log('Erreur dans la requête ');
         res.json({ message: "Veuillez remplir le lieu !" });
     }
 }
 
 var articlebyprix = function (req, res) {
-    co.connection.query("SELECT article.Nom,Stock,Prix,Description,categorie.Nom as Categorie,image.URL FROM `article` INNER JOIN categorie ON article.ID_Categorie = categorie.Id_Categorie INNER JOIN image ON image.Id_image = article.ID_image ORDER BY Prix ASC",
-        function (error, rows) {
-            if (!!error) {
-                console.log('Requête réussie !\n');
-                res.json({ message: "echec de la requête" });
-            } else {
-                console.log('Requête réussie !\n');
-                res.write("{")
-                res.write('"' + 'Vente' + '"' + ": ")
-                res.write("[")
-                for (var i = 0; i < rows.length; i++) {
-                    var test = "Article" + " " + i;
-                    if (i != 0) {
-                        res.write(",");
-                    }
-                    res.write(JSON.stringify({
-                        [test]: {
-                            Nom: rows[i].Nom,
-                            Stock: rows[i].Stock,
-                            Prix: rows[i].Prix,
-                            Description: rows[i].Description,
-                            Categorie: rows[i].Categorie,
-                            URL: rows[i].URL
-                        }
-                    }));
+    var lieux = req.query.lieux;
+    if (lieux) {
+        co.connection.query("SELECT article.Nom,Stock,Prix,Description,categorie.Nom as Categorie,image.URL FROM `article` INNER JOIN categorie ON article.ID_Categorie = categorie.Id_Categorie INNER JOIN image ON image.Id_image = article.ID_image INNER JOIN provenir ON provenir.Id_article = article.Id_article INNER JOIN Localisation ON Localisation.Id_Localisation = Provenir.Id_Localisation WHERE Localisation.Lieux = '" + lieux + "' ORDER BY Prix ASC",
+            function (error, rows) {
+                if (!!error) {
+                    console.log('Requête réussie !\n');
+                    res.json({ message: "echec de la requête" });
+                } else {
+                    console.log('Requête réussie !\n');
+                    const articles = rows.map((row) => ({
+                        Nom: row.Nom,
+                        Stock: row.Stock,
+                        Prix: row.Prix,
+                        Description: row.Description,
+                        Categorie: row.Categorie,
+                        URL: row.URL
+                    }))
+                    res.json({ articles });
                 }
-                res.write("]")
-                res.write("}")
-                res.end();
-            }
-        });
+            });
+    } else {
+        console.log('Erreur dans la requête ');
+        res.json({ message: "Veuillez remplir le lieu !" });
+    }
 }
 
 var eventpar = function (req, res) {
@@ -410,25 +390,11 @@ var commandes = function (req, res) {
                     console.log('Erreur dans la requête');
                     res.json({ message: "erreur de la requête" });
                 } else {
-                    res.write("{")
-                    res.write('"' + 'panier' + '"' + ": ")
-                    res.write("[")
-                    console.log('Requête réussie !\n');
-                    for (var i = 0; i < rows.length; i++) {
-                        var test = "commande" + " " + i;
-                        if (i != 0) {
-                            res.write(",");
-                        }
-                        res.write(JSON.stringify({
-                            [test]: {
-                                Article: rows[i].Nom,
-                                Quantite: rows[i].Quantite,
-                            }
-                        }));
-                    }
-                    res.write("]")
-                    res.write("}")
-                    res.end();
+                    const commande = rows.map((row) => ({
+                        Article: row.Nom,
+                        Quantite: row.Quantite,
+                    }))
+                    res.json({ commande });
                 }
             });
     } else {
@@ -572,38 +538,32 @@ var suprphoto = function (req, res) {
 }
 
 var filtrecat = function (req, res) {
-    co.connection.query("SELECT article.Nom,Stock,Prix,Description,categorie.Nom as Categorie,image.URL FROM `article` INNER JOIN categorie ON article.ID_Categorie = categorie.Id_Categorie INNER JOIN image ON image.Id_image = article.ID_image ORDER BY article.Id_Categorie ASC",
-        function (error, rows) {
-            if (!!error) {
-                console.log('Requête réussie !\n');
-                res.json({ message: "echec de la requête" });
-            } else {
-                console.log('Requête réussie !\n');
-                res.write("{")
-                res.write('"' + 'Vente' + '"' + ": ")
-                res.write("[")
-                for (var i = 0; i < rows.length; i++) {
-                    var test = "Article" + " " + i;
-                    if (i != 0) {
-                        res.write(",");
-                    }
-                    res.write(JSON.stringify({
-                        [test]: {
-                            Nom: rows[i].Nom,
-                            Stock: rows[i].Stock,
-                            Prix: rows[i].Prix,
-                            Description: rows[i].Description,
-                            Categorie: rows[i].Categorie,
-                            URL: rows[i].URL
-                        }
-                    }));
+    var lieux = req.query.lieux;
+    if (lieux) {
+        co.connection.query("SELECT article.Nom,Stock,Prix,Description,categorie.Nom as Categorie,image.URL FROM `article` INNER JOIN categorie ON article.ID_Categorie = categorie.Id_Categorie INNER JOIN image ON image.Id_image = article.ID_image INNER JOIN provenir ON provenir.Id_article = article.Id_article INNER JOIN Localisation ON Localisation.Id_Localisation = Provenir.Id_Localisation WHERE Localisation.Lieux = '" + lieux + "' ORDER BY Categorie ASC",
+            function (error, rows) {
+                if (!!error) {
+                    console.log('Requête réussie !\n');
+                    res.json({ message: "echec de la requête" });
+                } else {
+                    console.log('Requête réussie !\n');
+                    const articles = rows.map((row) => ({
+                        Nom: row.Nom,
+                        Stock: row.Stock,
+                        Prix: row.Prix,
+                        Description: row.Description,
+                        Categorie: row.Categorie,
+                        URL: row.URL
+                    }))
+                    res.json({ articles });
                 }
-                res.write("]")
-                res.write("}")
-                res.end();
-            }
-        });
+            });
+    } else {
+        console.log('Erreur dans la requête ');
+        res.json({ message: "Veuillez remplir le lieu !" });
+    }
 }
+
 var panier = function (req, res) {
     var mail = req.body.mail;
     var article = req.body.article;

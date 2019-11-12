@@ -1,12 +1,11 @@
-var co = require('./bddconnect');
+var co = require('../database/bddconnect');
 var express = require('express');
 var app = express();
 var bodyParser = require("body-parser");
-var jwt = require('./token.js');
+var jwt = require('../jwt/token.js');
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-
 
 var add = function (req, res) {
     cat = req.body.cat;

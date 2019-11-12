@@ -9,7 +9,7 @@ const port = 3000;
 
 var express = require('express');
 var app = express();
-var co = require('./bddconnect');
+var co = require('./database/bddconnect');
 
 var bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -32,71 +32,92 @@ co.connection.connect(function (error) {
 app.listen(port, function () {
     console.log("Mon serveur fonctionne sur http://" + hostname + ":" + port);
 });
-myRouter.route('/panier')
-    .post(geting.panier)
 
-myRouter.route('/article/tri')
-    .get(geting.articlebyprix)
+//Les routes :
 
-myRouter.route('/article')
-    .get(geting.article)
-    .post(geting.addarticle)
-
-myRouter.route('/article/categorie')
-    .post(geting.add)
-    .get(geting.filtrecat)
-
-myRouter.route('/event')
-    .post(geting.eventpar)
-
-myRouter.route('/event/add')
-    .post(geting.eventadd)
-
-myRouter.route('/avis/like')
-    .post(geting.liker)
-
-myRouter.route('/panier/user')
-    .post(geting.commandes)
-
-myRouter.route('/photo/suppr')
-    .get(geting.suprphoto)
-    .post(geting.suprcomm)
-
-myRouter.route('/statut')
-    .post(metpost.statut)
-
-myRouter.route('/user/connection')
-    .post(metpost.userco)
-
-myRouter.route('/user/inscription')
+//Utilisateurs-------------------------------------------
+myRouter.route('/user/inscription')         //S'inscrire sur le site
     .post(metpost.userinsc)
 
-myRouter.route('/photo/add')
-    .post(metpost.addphoto)
+myRouter.route('/user/connection')          //Se connecter sur le site
+    .post(metpost.userco)
+//-------------------------------------------------------
 
-myRouter.route('/photo/recup')
-    .post(metpost.recupphoto)
+//Articles-----------------------------------------------
+myRouter.route('/article')                  //Afficher les articles
+    .get(geting.article)
 
-myRouter.route('/participant')
-    .post(metpost.participant)
+myRouter.route('/article/add')              //Ajouter un article
+    .post(geting.addarticle)
 
-myRouter.route('/event/actuel')
-    .post(metpost.actuevent)
+myRouter.route('/article/tri/prix')         //Trier les articles par prix
+    .get(geting.articlebyprix)
 
-myRouter.route('/event/passe')
-    .post(metpost.pactuevent)
+myRouter.route('/article/tri/categorie')    //Trier les articles par catégorie
+    .get(geting.filtrecat)
 
-myRouter.route('/avis/comment')
+myRouter.route('/article/categorie/add')    //Ajouter une catégorie
+    .post(geting.add)
+
+myRouter.route('/article/best')             //Afficher les 3 articles les plus vendus
+    .post(metpost.best3)
+
+myRouter.route('/article/suppr')            //Supprimer un article
+    .post(metpost.suprarticle)
+//-------------------------------------------------------
+
+//Évènements---------------------------------------------
+myRouter.route('/event/add')                //Ajouter un évènement
+    .post(geting.eventadd)
+
+myRouter.route('/event/join')               //Rejoindre un évènement
+    .post(geting.eventpar)
+
+myRouter.route('/event/participant')        //Récupérer les participants sur un évènement
+    .get(metpost.participant)  //modif method
+
+myRouter.route('/event/actuel')             //Afficher les évènements non-passés
+    .get(metpost.actuevent)     //modif method
+
+myRouter.route('/event/passe')              //Afficher les évènements passés
+    .get(metpost.pactuevent)    //modif method
+//-------------------------------------------------------
+
+//Avis---------------------------------------------------
+myRouter.route('/avis/like')                //Ajouter un "j'aime"
+    .post(geting.liker)
+
+myRouter.route('/avis/comment/add')         //Ajouter un commentaire
     .post(metpost.comment)
 
-myRouter.route('/article/suppr')
-    .post(metpost.suprarticle)
+myRouter.route('/avis/comment/delete')      //Supprimer un commentaire
+    .post(geting.suprcomm)
+//-------------------------------------------------------
 
-myRouter.route('/passcommand')
+//Photos-------------------------------------------------
+myRouter.route('/photo/add')                //Ajouter une photo
+    .post(metpost.addphoto)
+
+myRouter.route('/photo/recup')              //Récupérer toutes les photos
+    .get(metpost.recupphoto) //modif method
+
+myRouter.route('/photo/suppr')              //Supprimer une photo
+    .post(geting.suprphoto)   //modif method
+//-------------------------------------------------------
+
+//Panier-------------------------------------------------
+myRouter.route('/panier/add')               //Ajouter au panier
+    .post(geting.panier)
+
+myRouter.route('/panier/user')              //Afficher le panier
+    .post(geting.commandes)
+
+myRouter.route('/panier/pass')              //Passer la commande
     .post(metpost.passcommand)
+//-------------------------------------------------------
 
-myRouter.route('/best3')
-    .post(metpost.best3)
-    
+myRouter.route('/statut')                   //Afficher les roles
+    .get(metpost.statut)
+
 // Nous demandons à l'application d'utiliser notre routeur
 app.use(myRouter);

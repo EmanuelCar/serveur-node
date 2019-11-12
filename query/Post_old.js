@@ -1,7 +1,7 @@
-var co = require('./bddconnect');
+var co = require('../database/bddconnect');
 var express = require('express');
 var bcrypt = require('bcrypt');
-var jwt = require('./token.js');
+var jwt = require('../jwt/token.js');
 
 
 var app = express();
@@ -10,7 +10,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 var statut = function (req, res) {
-    co.connection.query("SELECT " + req.body.col + " FROM statut", function (error, rows) {
+    co.connection.query("SELECT Id_Statut, Roles FROM statut", function (error, rows) {
         if (!!error) {
             console.log('Erreur dans la requête');
             res.json({ message: "Erreur dans la requête !" });

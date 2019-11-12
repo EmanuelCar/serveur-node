@@ -9,15 +9,6 @@ var bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-/*app.use(session({
-    secret: 'arft36587rsnj3rr4u5j3',
-    name: 'cookie',
-    proxy: true,
-    resave: true,
-    saveUninitialized: true,
-    loggedin: false
-}))*/
-
 var statut = function (req, res) {
     co.connection.query("SELECT " + req.body.col + " FROM statut", function (error, rows) {
         if (!!error) {

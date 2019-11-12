@@ -2,6 +2,8 @@ var co = require('./bddconnect');
 var express = require('express');
 var app = express();
 var bodyParser = require("body-parser");
+var jwt = require('./token.js');
+
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
@@ -91,11 +93,11 @@ var articlebyprix = function (req, res) {
 }
 
 var eventpar = function (req, res) {
-    nom = req.body.nom;
-    prenom = req.body.prenom;
+    tik = jwt.decodeTokenForUser(req, res);
     event = req.body.event;
-    if (nom && prenom && event) {
-        co.connection.query("INSERT INTO participer (Id_utilisateur,Id_evenements) SELECT Id_utilisateur, Id_evenements FROM utilisateur,evenement WHERE utilisateur.Nom = '" + nom + "' AND utilisateur.Prenom = '" + prenom + "' AND evenement.Nom = '" + event + "'", function (error, rows) {
+    console.log(tik);
+    if (tik && event) {
+        co.connection.query("INSERT INTO participer (Id_utilisateur,Id_evenements) SELECT Id_utilisateur, Id_evenements FROM utilisateur,evenement WHERE utilisateur.Id_utilisateur = ? AND evenement.Nom = ?", [tik.payload.Id, event], function (error, rows) {
             if (!!error) {
                 console.log('Erreur dans la requête');
                 res.json({ message: "erreur de la requête" });

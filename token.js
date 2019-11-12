@@ -12,5 +12,23 @@ module.exports = {
             {
                 expiresIn: '1h'
             })
-    }
+    },
+
+    decodeTokenForUser: function(req, res) {
+        var decode = req.headers['authorization'];
+        decode = decode.split(" ");
+        console.log(decode[1]);
+        var marche = jwt.verify(decode[1], JWT_SIGN_SECRET, function(error, decoded) {
+            if(error) {
+               res.json({message: 'erreur'});
+            } else {
+                marche = jwt.decode(decode[1], {complete: true});
+                console.log(marche.payload.Id);
+                return marche;
+            }
+
+        });
+        return marche;
+       }
+       
 }

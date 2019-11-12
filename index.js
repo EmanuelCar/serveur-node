@@ -127,8 +127,8 @@ myRouter.route('/panier/pass')              //Passer la commande
     .post(post_panier.passcommand)
 //-------------------------------------------------------
 
-myRouter.route('/statut')                   //Afficher les roles
-    .get(metpost.statut)
+/*myRouter.route('/statut')                   //Afficher les roles
+    .get(metpost.statut)*/
 
 // Nous demandons à l'application d'utiliser notre routeur
 app.use(myRouter);

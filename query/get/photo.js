@@ -24,4 +24,6 @@ var recupphoto = function (req, res) {
     });
 }
 
-module.exports = recupphoto;
+module.exports = {
+    recupphoto
+};

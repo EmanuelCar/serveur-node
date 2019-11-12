@@ -37,7 +37,9 @@ var add = function (req, res) {
 }
 
 var article = function (req, res) {
-    co.connection.query("SELECT article.Nom,Stock,Prix,Description,categorie.Nom as Categorie,image.URL FROM `article` INNER JOIN categorie ON article.ID_Categorie = categorie.Id_Categorie INNER JOIN image ON image.Id_image = article.ID_image",
+    var lieux = req.query.lieux;
+    if (lieux){
+    co.connection.query("SELECT article.Nom,Stock,Prix,Description,categorie.Nom as Categorie,image.URL FROM `article` INNER JOIN categorie ON article.ID_Categorie = categorie.Id_Categorie INNER JOIN image ON image.Id_image = article.ID_image INNER JOIN provenir ON provenir.Id_article = article.Id_article INNER JOIN Localisation ON Localisation.Id_Localisation = Provenir.Id_Localisation WHERE Localisation.Lieux = '" + lieux + "'",
         function (error, rows) {
             if (!!error) {
                 console.log('Erreur dans la requête');
@@ -68,6 +70,10 @@ var article = function (req, res) {
                 res.end();
             }
         });
+    } else {
+        console.log('Erreur dans la requête 2 ');
+        res.json({ message: "Veuillez remplir le lieux !" });
+    }
 }
 
 var articlebyprix = function (req, res) {

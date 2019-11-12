@@ -32,7 +32,6 @@ var userco = function (req, res) {
             } else {
                 res.json({ message: 'Mail incorrect !' });
             }
-
         });
     } else {
         res.json({ message: 'Veuillez saisir un mail et un mot de passe !' });

@@ -2,6 +2,7 @@
 var get_article = require('./query/get/article.js');
 var get_photo = require('./query/get/photo.js');
 var get_event = require('./query/get/evenement.js');
+var get_autre = require('./query/get/autres.js');
 
 //Récupérer les requêtes utilisant POST
 var post_article = require('./query/post/article.js');
@@ -127,8 +128,16 @@ myRouter.route('/panier/pass')              //Passer la commande
     .post(post_panier.passcommand)
 //-------------------------------------------------------
 
-/*myRouter.route('/statut')                   //Afficher les roles
-    .get(metpost.statut)*/
+//Autres-------------------------------------------------
+myRouter.route('/statut')                   //Afficher la liste des roles
+    .get(get_autre.statut)
+
+myRouter.route('/lieu')                     //Afficher la liste des lieux
+    .get(get_autre.lieu)
+
+myRouter.route('/event')                     //Afficher la liste des évènements
+    .get(get_autre.event)
+//-------------------------------------------------------
 
 // Nous demandons à l'application d'utiliser notre routeur
 app.use(myRouter);

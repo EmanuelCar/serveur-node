@@ -24,7 +24,6 @@ module.exports = {
                res.json({message: 'erreur'});
             } else {
                 marche = jwt.decode(decode[1], {complete: true});
-                console.log(marche.payload.Id);
                 return marche;
             }
 

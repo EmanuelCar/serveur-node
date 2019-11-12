@@ -21,8 +21,6 @@ var userco = function (req, res) {
                 bcrypt.compare(password, rows[0].Password, function (errBycrypt, resBycrypt) {
                     if (resBycrypt) {
                         console.log('Requête réussie !');
-                        //req.session.loggedin = true;
-                        //req.session.mail = mail;
                         res.json({
                             Id_user: rows[0].Id_utilisateur,
                             token: jwt.generateTokenForUser(rows[0])
@@ -30,7 +28,6 @@ var userco = function (req, res) {
                     } else {
                         res.json({ message: 'Mot de passe incorrect !' });
                     }
-                    //res.redirect('/home');
                 })
             } else {
                 res.json({ message: 'Mail incorrect !' });
@@ -62,7 +59,7 @@ var userinsc = function (req, res) {
             } else if (rows.length == 1) {
                 res.json({ message: 'Un compte avec cette adresse existe déjà !' });
             } else {
-                bcrypt.hash(password, 5, function (err, bcryptedPassword) {
+                bcrypt.hash(password, 8, function (err, bcryptedPassword) {
                     co.connection.query("INSERT INTO `utilisateur` (Nom, Prenom, Mail, Password, Id_Localisation) VALUES (?,?,?,?,?)", [nom, prenom, mail, bcryptedPassword, lieu], function (error, rows) {
                         if (!!error) {
                             console.log("Erreur dans la requête d'envoi");

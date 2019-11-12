@@ -72,7 +72,7 @@ var article = function (req, res) {
         });
     } else {
         console.log('Erreur dans la requête 2 ');
-        res.json({ message: "Veuillez remplir le lieux !" });
+        res.json({ message: "Veuillez remplir le lieu !" });
     }
 }
 
@@ -121,12 +121,12 @@ var eventpar = function (req, res) {
                 res.json({ message: "erreur de la requête" });
             } else {
                 console.log('Requête réussie !\n');
-                res.json({ message: "tu est bien inscrit" });
+                res.json({ message: "tu es bien inscrit" });
             }
         });
     } else {
         console.log('Erreur dans la requête');
-        res.json({ message: "Veuillez remplir tout les champs !" });
+        res.json({ message: "Veuillez remplir tous les champs !" });
     }
 }
 
@@ -254,7 +254,7 @@ var addarticle = function (req, res) {
         });
     } else {
         console.log('Erreur dans la requête');
-        res.json({ message: "Veuillez remplir tout les champs !" });
+        res.json({ message: "Veuillez remplir tous les champs !" });
     }
 }
 
@@ -396,7 +396,7 @@ var liker = function (req, res) {
         });
     } else {
         console.log('Erreur dans la requête');
-        res.json({ message: "Veuillez remplir tout les champs !" });
+        res.json({ message: "Veuillez remplir tous les champs !" });
     }
 }
 
@@ -433,7 +433,7 @@ var commandes = function (req, res) {
             });
     } else {
         console.log('Erreur dans la requête');
-        res.json({ message: "Veuillez remplir tout les champs !" });
+        res.json({ message: "Veuillez remplir tous les champs !" });
     }
 }
 
@@ -501,7 +501,7 @@ var eventadd = function (req, res) {
         });
     } else {
         console.log('Erreur dans la requête');
-        res.json({ message: "Veuillez remplir tout les champs !" });
+        res.json({ message: "Veuillez remplir tous les champs !" });
     }
 }
 
@@ -527,7 +527,7 @@ var suprcomm = function (req, res) {
                                 res.json({ message: "erreur de la requête" });
                             } else {
                                 console.log('Requête réussie !\n');
-                                res.json({ message: "Commentaire suprimée" });
+                                res.json({ message: "Commentaire supprimé" });
                             }
                         });
                 } else {
@@ -538,7 +538,7 @@ var suprcomm = function (req, res) {
                                 res.json({ message: "erreur de la requête" });
                             } else {
                                 console.log('Requête réussie !\n');
-                                res.json({ message: "Commentaire suprimée" });
+                                res.json({ message: "Commentaire supprimé" });
                             }
 
                         });
@@ -547,7 +547,7 @@ var suprcomm = function (req, res) {
             });
     } else {
         console.log('Erreur dans la requête');
-        res.json({ message: "Veuillez remplir tout les champs !" });
+        res.json({ message: "Veuillez remplir tous les champs !" });
     }
 }
 
@@ -561,13 +561,13 @@ var suprphoto = function (req, res) {
                     res.json({ message: "erreur de la requête" });
                 } else {
                     console.log('Requête réussie !\n');
-                    res.json({ message: "photo suprimée" });
+                    res.json({ message: "photo supprimée" });
                 }
 
             });
     } else {
         console.log('Erreur dans la requête');
-        res.json({ message: "Veuillez remplir tout les champs !" });
+        res.json({ message: "Veuillez remplir tous les champs !" });
     }
 }
 
@@ -737,7 +737,7 @@ var panier = function (req, res) {
         });
     } else {
         console.log('Erreur dans la requête');
-        res.json({ message: "Veuillez remplir tout les champs !" });
+        res.json({ message: "Veuillez remplir tous les champs !" });
     }
 }
 

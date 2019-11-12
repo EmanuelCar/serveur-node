@@ -1,5 +1,6 @@
 var express = require('express');
 var geting = require('./Get.js');
+var metpost = require('./Post.js');
 
 //Load HTTP module
 const http = require("http");
@@ -33,29 +34,65 @@ app.listen(port, function () {
 });
 myRouter.route('/panier')
     .post(geting.panier)
-myRouter.route('/articleorder')
+
+myRouter.route('/article/tri')
     .get(geting.articlebyprix)
 
 myRouter.route('/article')
     .get(geting.article)
     .post(geting.addarticle)
 
-myRouter.route('/article/adcategorie')
+myRouter.route('/article/categorie')
     .post(geting.add)
     .get(geting.filtrecat)
 
 myRouter.route('/event')
     .post(geting.eventpar)
-    myRouter.route('/event/add')
+
+myRouter.route('/event/add')
     .post(geting.eventadd)
-myRouter.route('/like')
+
+myRouter.route('/avis/like')
     .post(geting.liker)
 
-myRouter.route('/panier/ut')
+myRouter.route('/panier/user')
     .post(geting.commandes)
 
-myRouter.route('/suppr')
+myRouter.route('/photo/suppr')
     .get(geting.suprphoto)
     .post(geting.suprcomm)
+
+myRouter.route('/statut')
+    .post(metpost.statut)
+
+myRouter.route('/user/connection')
+    .post(metpost.userco)
+
+myRouter.route('/user/inscription')
+    .post(metpost.userinsc)
+
+myRouter.route('/photo/add')
+    .post(metpost.addphoto)
+
+myRouter.route('/photo/recup')
+    .post(metpost.recupphoto)
+
+myRouter.route('/participant')
+    .post(metpost.participant)
+
+myRouter.route('/event/actuel')
+    .post(metpost.actuevent)
+
+myRouter.route('/avis/comment')
+    .post(metpost.comment)
+
+myRouter.route('/article/suppr')
+    .post(metpost.suprarticle)
+
+myRouter.route('/passcommand')
+    .post(metpost.passcommand)
+
+myRouter.route('/best3')
+    .post(metpost.best3)
 // Nous demandons à l'application d'utiliser notre routeur
 app.use(myRouter);

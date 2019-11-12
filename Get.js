@@ -130,8 +130,9 @@ var addarticle = function (req, res) {
     var URL = req.body.URL;
     var cat = req.body.cat;
     var prix = req.body.prix;
+    var lieux = req.body.lieux;
     var description = req.body.description;
-    if (nom && URL && cat && prix && description) {
+    if (nom && URL && cat && prix && description && lieux) {
         co.connection.beginTransaction(function (error) {
             co.connection.query("SELECT Nom FROM article WHERE Nom = '" + nom + "'", function (error, rows) {
                 if (!!error) {
@@ -208,17 +209,27 @@ var addarticle = function (req, res) {
                                                                                     co.connection.rollback(function () {
                                                                                     });
                                                                                 } else {
-                                                                                    co.connection.commit(function (error) {
-                                                                                        if (!!error) {
-                                                                                            console.log('Erreur dans la requête 8 ');
-                                                                                            res.json({ message: "erreur de la requête" });
-                                                                                            co.connection.rollback(function () {
-                                                                                            });
-                                                                                        } else {
-                                                                                            console.log('Requête réussie !\n');
-                                                                                            res.json({ message: "Ajout de l'article " + nom });
-                                                                                        }
-                                                                                    });
+                                                                                    co.connection.query("INSERT INTO provenir (Id_Localisation,Id_Article) VALUES ((SELECT Id_Localisation FROM Localisation WHERE Lieux = '" + lieux + "')," + id + ")",
+                                                                                        function (error, rows) {
+                                                                                            if (!!error) {
+                                                                                                console.log('Erreur dans la requête 8 ');
+                                                                                                res.json({ message: "erreur de la requête" });
+                                                                                                co.connection.rollback(function () {
+                                                                                                });
+                                                                                            } else {
+                                                                                                co.connection.commit(function (error) {
+                                                                                                    if (!!error) {
+                                                                                                        console.log('Erreur dans la requête 9 ');
+                                                                                                        res.json({ message: "erreur de la requête" });
+                                                                                                        co.connection.rollback(function () {
+                                                                                                        });
+                                                                                                    } else {
+                                                                                                        console.log('Requête réussie !\n');
+                                                                                                        res.json({ message: "Ajout de l'article " + nom });
+                                                                                                    }
+                                                                                                });
+                                                                                            }
+                                                                                        });
                                                                                 }
                                                                             });
                                                                     }

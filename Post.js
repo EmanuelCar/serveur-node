@@ -37,7 +37,6 @@ var statut = function (req, res) {
 var userco = function (req, res) {
     var mail = req.body.mail;
     var password = req.body.password;
-
     if (mail && password) {
         co.connection.query("SELECT Id_utilisateur, Nom, Prenom, Mail, Password, statut.Roles, localisation.Lieux FROM utilisateur INNER JOIN statut ON utilisateur.Id_Statut = statut.Id_Statut INNER JOIN localisation ON utilisateur.Id_Localisation = localisation.Id_Localisation WHERE Mail = ?", [mail], function (error, rows) {
             if (!!error) {

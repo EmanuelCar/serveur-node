@@ -1,5 +1,7 @@
 var express = require('express');
-var geting = require('./Get.js');
+var get_article = require('./query/get/article.js');
+var get_photo = require('./query/get/photo.js');
+var get_event = require('./query/get/evenement.js');
 var metpost = require('./Post.js');
 
 //Load HTTP module
@@ -45,16 +47,16 @@ myRouter.route('/user/connection')          //Se connecter sur le site
 
 //Articles-----------------------------------------------
 myRouter.route('/article')                  //Afficher les articles
-    .get(geting.article)
+    .get(get_article.article)
 
 myRouter.route('/article/add')              //Ajouter un article
     .post(geting.addarticle)
 
 myRouter.route('/article/tri/prix')         //Trier les articles par prix
-    .get(geting.articlebyprix)
+    .get(get_article.articlebyprix)
 
 myRouter.route('/article/tri/categorie')    //Trier les articles par catégorie
-    .get(geting.filtrecat)
+    .get(get_article.filtrecat)
 
 myRouter.route('/article/categorie/add')    //Ajouter une catégorie
     .post(geting.add)
@@ -74,13 +76,13 @@ myRouter.route('/event/join')               //Rejoindre un évènement
     .post(geting.eventpar)
 
 myRouter.route('/event/participant')        //Récupérer les participants sur un évènement
-    .get(metpost.participant)  //modif method
+    .get(get_event.participant)  //modif method
 
 myRouter.route('/event/actuel')             //Afficher les évènements non-passés
-    .get(metpost.actuevent)     //modif method
+    .get(get_event.actuevent)     //modif method
 
 myRouter.route('/event/passe')              //Afficher les évènements passés
-    .get(metpost.pactuevent)    //modif method
+    .get(get_event.pactuevent)    //modif method
 //-------------------------------------------------------
 
 //Avis---------------------------------------------------
@@ -99,7 +101,7 @@ myRouter.route('/photo/add')                //Ajouter une photo
     .post(metpost.addphoto)
 
 myRouter.route('/photo/recup')              //Récupérer toutes les photos
-    .get(metpost.recupphoto) //modif method
+    .get(get_photo.recupphoto) //modif method
 
 myRouter.route('/photo/suppr')              //Supprimer une photo
     .post(geting.suprphoto)   //modif method

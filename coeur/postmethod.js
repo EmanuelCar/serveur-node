@@ -20,6 +20,7 @@ var statut = function (req, res) {
     co.connection.query("SELECT " + req.body.col + " FROM statut", function (error, rows) {
         if (!!error) {
             console.log('Erreur dans la requête');
+            res.json({message: "Erreur dans la requête !"});
         } else {
             console.log('Requête réussie !');
             numRows = rows.length;
@@ -42,6 +43,7 @@ var userco = function (req, res) {
         co.connection.query("SELECT Id_utilisateur, Nom, Prenom, Mail, Password, statut.Roles, localisation.Lieux FROM utilisateur INNER JOIN statut ON utilisateur.Id_Statut = statut.Id_Statut INNER JOIN localisation ON utilisateur.Id_Localisation = localisation.Id_Localisation WHERE Mail = ? AND Password = ?", [mail, password], function (error, rows) {
             if (!!error) {
                 console.log('Erreur dans la requête');
+                res.json({message: "Erreur dans la requête !"});
             } else if (rows.length > 0) {
                 console.log('Requête réussie !');
                 //req.session.loggedin = true;
@@ -75,6 +77,7 @@ var userinsc = function (req, res) {
         co.connection.query("SELECT Mail, Password FROM `utilisateur` WHERE Mail = ?", [mail], function (error, rows) {
             if (!!error) {
                 console.log('Erreur dans la requête');
+                res.json({message: "Erreur dans la requête !"});
             } else if (password.length < 8) {
                 res.json({message: 'Le mot de passe doit contenir au moins 8 caractères !'});
             } else if (!rgx.test(password)) {
@@ -85,6 +88,7 @@ var userinsc = function (req, res) {
                 co.connection.query("INSERT INTO `utilisateur` (Nom, Prenom, Mail, Password, Id_Localisation) VALUES (?,?,?,?,?)", [nom, prenom, mail, password, lieu], function (error, rows) {
                     if (!!error) {
                         console.log("Erreur dans la requête d'envoi");
+                        res.json({message: "Erreur dans la requête !"});
                     } else {
                         res.json({message: 'Compte créé avec succès !'});
                     }
@@ -107,6 +111,7 @@ var addphoto = function (req, res) {
         co.connection.query("SELECT evenement.Id_evenements, evenement.Nom AS évènement, evenement.Date_fin, utilisateur.Prenom, utilisateur.Nom FROM evenement INNER JOIN participer ON participer.Id_evenements = evenement.Id_evenements INNER JOIN utilisateur ON participer.Id_Utilisateur = utilisateur.Id_Utilisateur WHERE evenement.Date_fin <= ? AND evenement.Nom = ?", [date, event], function (error, rows) {
             if (!!error) {
                 console.log('Erreur dans la requête');
+                res.json({message: "Erreur dans la requête !"});
             } else if(rows.length == 0) {
                 res.json({message: "L'évènement n'existe pas ou il n'est pas encore passé !"});
             } else {
@@ -114,6 +119,7 @@ var addphoto = function (req, res) {
                 co.connection.query("INSERT INTO `image` (URL, Id_evenements) VALUES (?, ?) ", [url, id_evenement], function (error, rows) {
                     if (!!error) {
                         console.log("Erreur dans la requête d'envoi");
+                        res.json({message: "Erreur dans la requête !"});
                     } else {
                         res.json({message: "L'image a bien été ajoutée !"});
                     }
@@ -131,6 +137,7 @@ var recupphoto = function(req, res){
     co.connection.query("SELECT URL FROM image", function(error, rows){
         if (!!error) {
             console.log('Erreur dans la requête');
+            res.json({message: "Erreur dans la requête !"});
         } else {
             console.log('Requête réussie !');
             res.write("[");
@@ -156,12 +163,14 @@ var participant = function(req, res) {
         co.connection.query("SELECT Nom FROM evenement WHERE Nom = ?", [event], function(error, rows) {
             if (!!error) {
                 console.log('Erreur dans la requête');
+                res.json({message: "Erreur dans la requête !"});
             } else if(rows.length == 0){
                 res.json({message: "veuillez sélectionner un évènement existant !"})
             } else {
                 co.connection.query("SELECT evenement.Nom AS évènement, utilisateur.Nom, utilisateur.Prenom FROM participer INNER JOIN evenement ON participer.Id_evenements = evenement.Id_evenements INNER JOIN utilisateur ON participer.Id_Utilisateur = utilisateur.Id_Utilisateur WHERE evenement.Nom = ?", [event], function(error, rows) {
                 if (!!error) {
                     console.log('Erreur dans la requête');
+                    res.json({message: "Erreur dans la requête !"});
                 } else if(rows.length == 0){
                     res.json({message: "Il n'y a pas encore de participant à cet évènement !"})
                 } else {
@@ -200,6 +209,7 @@ var actuevent = function(req, res) {
     co.connection.query("SELECT Nom, Description, Date_debut, Date_fin, localisation.Lieux FROM evenement INNER JOIN localisation ON evenement.Id_Localisation = localisation.Id_Localisation WHERE Date_fin >= ?", [date], function(error, rows){
         if (!!error) {
             console.log('Erreur dans la requête');
+            res.json({message: "Erreur dans la requête !"});
         } else {
             res.write("{");
             res.write('"Évènements"' + ": ");
@@ -236,6 +246,7 @@ var comment = function(req, res) {
         co.connection.query("SELECT Mail, Id_utilisateur FROM utilisateur WHERE Mail = ?", [mail], function(error, rows) {
             if (!!error) {
                 console.log('Erreur dans la requête');
+                res.json({message: "Erreur dans la requête !"});
             } else if(rows.length == 0){
                 res.json({message: "Cet utilisateur n'existe pas !"})
             } else {
@@ -243,6 +254,7 @@ var comment = function(req, res) {
                 co.connection.query("SELECT Nom, Id_evenements FROM evenement WHERE Nom = ? AND Date_fin <= ?", [event, date], function(error, rows) {
                     if (!!error) {
                         console.log('Erreur dans la requête');
+                        res.json({message: "Erreur dans la requête !"});
                     } else if(rows.length == 0){
                         res.json({message: "Cet évènement n'existe pas ou n'est pas encore passé !"})
                     } else {
@@ -250,6 +262,7 @@ var comment = function(req, res) {
                         co.connection.query("INSERT INTO avis (Commentaire, Id_utilisateur, Id_evenements) VALUE (?, ?, ?)", [commentaire, id_ut, id_ev], function(error, rows) {
                             if (!!error) {
                                 console.log('Erreur dans la requête');
+                                res.json({message: "Erreur dans la requête !"});
                             } else {
                                 res.json({message: "Votre commentaire a bien été ajouté !"})
                             }
@@ -262,12 +275,14 @@ var comment = function(req, res) {
         co.connection.query("SELECT Mail FROM utilisateur WHERE Mail = ?", [mail], function(error, rows) {
             if (!!error) {
                 console.log('Erreur dans la requête');
+                res.json({message: "Erreur dans la requête !"});
             } else if(rows.length == 0){
                 res.json({message: "Cet utilisateur n'existe pas !"})
             } else {
                 co.connection.query("SELECT Nom FROM evenement WHERE Nom = ?", [event], function(error, rows) {
                     if (!!error) {
                         console.log('Erreur dans la requête');
+                        res.json({message: "Erreur dans la requête !"});
                     } else if(rows.length == 0){
                         res.json({message: "Cet évènement n'existe pas !"})
                     } else {
@@ -280,6 +295,7 @@ var comment = function(req, res) {
         co.connection.query("SELECT mail FROM utilisateur WHERE mail = ?", [mail], function(error, rows) {
             if (!!error) {
                 console.log('Erreur dans la requête');
+                res.json({message: "Erreur dans la requête !"});
             } else if(rows.length == 0){
                 res.json({message: "Cet utilisateur n'existe pas !"})
             } else {
@@ -298,22 +314,26 @@ var suprarticle = function(req, res) {
         co.connection.query("SELECT mail FROM utilisateur WHERE mail = ?", [mail], function(error, rows) {
             if (!!error) {
                 console.log('Erreur dans la requête');
+                res.json({message: "Erreur dans la requête !"});
             } else if(rows.length == 0){
                 res.json({message: "Cet utilisateur n'existe pas !"})
             } else {
                 co.connection.query("SELECT Mail, Id_Statut FROM utilisateur WHERE Mail = ?", [mail], function(error, rows) {
                     if (!!error) {
                         console.log('Erreur dans la requête');
+                        res.json({message: "Erreur dans la requête !"});
                     } else if(rows[0].Id_Statut == 2){
                         co.connection.query("SELECT Nom FROM article WHERE Nom = ?", [article], function(error, rows) {
                             if (!!error) {
                                 console.log('Erreur dans la requête');
+                                res.json({message: "Erreur dans la requête !"});
                             } else if(rows.length == 0){
                                 res.json({message: "Cet article n'existe pas !"})
                             } else {
                                 co.connection.query("DELETE FROM article WHERE Nom = ?", [article], function(error, rows) {
                                     if (!!error) {
                                         console.log('Erreur dans la requête');
+                                        res.json({message: "Erreur dans la requête !"});
                                     } else {
                                         res.json({message: "L'article a bien été supprimé !"})
                                     }
@@ -330,6 +350,7 @@ var suprarticle = function(req, res) {
         co.connection.query("SELECT mail FROM utilisateur WHERE mail = ?", [mail], function(error, rows) {
             if (!!error) {
                 console.log('Erreur dans la requête');
+                res.json({message: "Erreur dans la requête !"});
             } else if(rows.length == 0){
                 res.json({message: "Cet utilisateur n'existe pas !"})
             } else {
@@ -347,6 +368,7 @@ var passcommand = function (req, res) {
         co.connection.query("SELECT Mail, Id_utilisateur FROM utilisateur WHERE Mail = ?", [mail], function(error, rows) {
             if (!!error) {
                 console.log('Erreur dans la requête');
+                res.json({message: "Erreur dans la requête !"});
             } else if(rows.length == 0){
                 res.json({message: "Cet utilisateur n'existe pas !"})
             } else {
@@ -354,12 +376,14 @@ var passcommand = function (req, res) {
                 co.connection.query("SELECT Id_commande FROM commande WHERE Id_utilisateur = ?", [rows[0].Id_utilisateur], function(error, rows) {
                     if (!!error) {
                         console.log('Erreur dans la requête');
+                        res.json({message: "Erreur dans la requête !"});
                     } else if(rows.length == 0){
                         res.json({message: "Vous n'avez pas de commande en cours !"})
                     } else {
                         co.connection.query("UPDATE commande SET Fini = TRUE WHERE Id_utilisateur = ?", [id_ut], function(error, rows) {
                             if (!!error) {
                                 console.log('Erreur dans la requête');
+                                res.json({message: "Erreur dans la requête !"});
                             } else {
                                 res.json({message: "La commande a bien été passée !"})
                             }
@@ -377,6 +401,7 @@ var best3 = function(req, res) {
     co.connection.query("SELECT article.Nom, SUM(Quantite) AS Quantité_totale FROM acheter INNER JOIN article ON acheter.Id_Article = article.Id_Article INNER JOIN commande ON acheter.Id_commande = commande.Id_commande WHERE commande.Fini = TRUE GROUP BY article.Nom ORDER BY Quantité_totale DESC LIMIT 3", function(error, rows) {
         if (!!error) {
             console.log('Erreur dans la requête');
+            res.json({message: "Erreur dans la requête !"});
         } else if(rows.length == 0){
             res.json({message: "Il n'y a pas encore d'articles commandé !"})
         } else if(rows.length == 1) {

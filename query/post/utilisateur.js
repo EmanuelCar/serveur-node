@@ -8,6 +8,7 @@ var bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
+//Se connecter avec ses identifiants
 var userco = function (req, res) {
     var mail = req.body.mail;
     var password = req.body.password;
@@ -38,6 +39,7 @@ var userco = function (req, res) {
     }
 }
 
+//s'enregistrer
 var userinsc = function (req, res) {
     var nom = req.body.nom;
     var prenom = req.body.prenom;

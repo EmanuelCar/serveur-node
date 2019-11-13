@@ -46,9 +46,9 @@ var add = function (req, res) {
 }
 
 var article = function (req, res) {
-    var lieux = req.query.lieux;
-    if (lieux) {
-        co.connection.query("SELECT article.Nom,Stock,Prix,Description,categorie.Nom as Categorie,image.URL FROM `article` INNER JOIN categorie ON article.ID_Categorie = categorie.Id_Categorie INNER JOIN image ON image.Id_image = article.ID_image INNER JOIN provenir ON provenir.Id_article = article.Id_article INNER JOIN Localisation ON Localisation.Id_Localisation = Provenir.Id_Localisation WHERE Localisation.Lieux = '" + lieux + "'",
+    tik = jwt.decodeTokenForUser(req, res);
+    if (tik) {
+        co.connection.query("SELECT article.Nom,Stock,Prix,Description,categorie.Nom as Categorie,image.URL FROM `article` INNER JOIN categorie ON article.ID_Categorie = categorie.Id_Categorie INNER JOIN image ON image.Id_image = article.ID_image INNER JOIN provenir ON provenir.Id_article = article.Id_article INNER JOIN Localisation ON Localisation.Id_Localisation = Provenir.Id_Localisation WHERE Localisation.Lieux = ?",[tik.payload.Lieu],
             function (error, rows) {
                 if (!!error) {
                     console.log('Erreur dans la requête');
@@ -73,9 +73,9 @@ var article = function (req, res) {
 }
 
 var articlebyprix = function (req, res) {
-    var lieux = req.query.lieux;
-    if (lieux) {
-        co.connection.query("SELECT article.Nom,Stock,Prix,Description,categorie.Nom as Categorie,image.URL FROM `article` INNER JOIN categorie ON article.ID_Categorie = categorie.Id_Categorie INNER JOIN image ON image.Id_image = article.ID_image INNER JOIN provenir ON provenir.Id_article = article.Id_article INNER JOIN Localisation ON Localisation.Id_Localisation = Provenir.Id_Localisation WHERE Localisation.Lieux = '" + lieux + "' ORDER BY Prix ASC",
+    tik = jwt.decodeTokenForUser(req, res);
+    if (tik) {
+        co.connection.query("SELECT article.Nom,Stock,Prix,Description,categorie.Nom as Categorie,image.URL FROM `article` INNER JOIN categorie ON article.ID_Categorie = categorie.Id_Categorie INNER JOIN image ON image.Id_image = article.ID_image INNER JOIN provenir ON provenir.Id_article = article.Id_article INNER JOIN Localisation ON Localisation.Id_Localisation = Provenir.Id_Localisation WHERE Localisation.Lieux = ? ORDER BY Prix ASC",[tik.payload.Lieu],
             function (error, rows) {
                 if (!!error) {
                     console.log('Requête réussie !\n');
@@ -554,9 +554,9 @@ var suprphoto = function (req, res) {
 }
 
 var filtrecat = function (req, res) {
-    var lieux = req.query.lieux;
-    if (lieux) {
-        co.connection.query("SELECT article.Nom,Stock,Prix,Description,categorie.Nom as Categorie,image.URL FROM `article` INNER JOIN categorie ON article.ID_Categorie = categorie.Id_Categorie INNER JOIN image ON image.Id_image = article.ID_image INNER JOIN provenir ON provenir.Id_article = article.Id_article INNER JOIN Localisation ON Localisation.Id_Localisation = Provenir.Id_Localisation WHERE Localisation.Lieux = '" + lieux + "' ORDER BY Categorie ASC",
+    tik = jwt.decodeTokenForUser(req, res);
+    if (tik) {
+        co.connection.query("SELECT article.Nom,Stock,Prix,Description,categorie.Nom as Categorie,image.URL FROM `article` INNER JOIN categorie ON article.ID_Categorie = categorie.Id_Categorie INNER JOIN image ON image.Id_image = article.ID_image INNER JOIN provenir ON provenir.Id_article = article.Id_article INNER JOIN Localisation ON Localisation.Id_Localisation = Provenir.Id_Localisation WHERE Localisation.Lieux = ? ORDER BY Categorie ASC",[tik.payload.Lieu],
             function (error, rows) {
                 if (!!error) {
                     console.log('Requête réussie !\n');

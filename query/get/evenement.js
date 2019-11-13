@@ -54,14 +54,14 @@ var actuevent = function (req, res) {
             if (rows.length == 0) {
                 res.json({ message: "Veuillez sélectionner une localisation existante !" });
             } else {
-                console.log(tik.payload.Lieu);
-                co.connection.query("SELECT Nom, Description, Date_debut, Date_fin, localisation.Lieux FROM evenement INNER JOIN localisation ON evenement.Id_Localisation = localisation.Id_Localisation WHERE Date_fin >= ? AND localisation.Lieux = ?", [date, tik.payload.Lieu], function (error, rows) {
+                co.connection.query("SELECT Nom, Description, Date_debut, Date_fin, evenement.visible, localisation.Lieux, image.URL FROM evenement INNER JOIN image ON evenement.Id_evenements = image.Id_evenements INNER JOIN localisation ON evenement.Id_Localisation = localisation.Id_Localisation WHERE Date_fin >= ? AND localisation.Lieux = ? AND Image_evenement = 1 AND evenement.visible = TRUE", [date, tik.payload.Lieu], function (error, rows) {
                     if (!!error) {
                         console.log('Erreur dans la requête');
                         res.json({ message: "Erreur dans la requête !" });
                     } else {
                         const évènements = rows.map((row) => ({
                             évènement: row.Nom,
+                            URL: row.URL,
                             Description: row.Description,
                             "Date de début": row.Date_debut,
                             "Date de fin": row.Date_fin,
@@ -72,6 +72,7 @@ var actuevent = function (req, res) {
                 })
             }
         })
+
     } else {
         res.json({ message: "Veuillez sélectionner un lieu !" });
     }
@@ -87,13 +88,14 @@ var pactuevent = function (req, res) {
             if (rows.length == 0) {
                 res.json({ message: "Veuillez sélectionner une localisation existante !" });
             } else {
-                co.connection.query("SELECT Nom, Description, Date_debut, Date_fin, localisation.Lieux FROM evenement INNER JOIN localisation ON evenement.Id_Localisation = localisation.Id_Localisation WHERE Date_fin < ? AND localisation.Lieux = ?", [date, tik.payload.Lieu], function (error, rows) {
+                co.connection.query("SELECT Nom, Description, Date_debut, Date_fin, evenement.visible, localisation.Lieux, image.URL FROM evenement INNER JOIN image ON evenement.Id_evenements = image.Id_evenements INNER JOIN localisation ON evenement.Id_Localisation = localisation.Id_Localisation WHERE Date_fin < ? AND localisation.Lieux = ? AND Image_evenement = 1 AND evenement.visible = TRUE", [date, tik.payload.Lieu], function (error, rows) {
                     if (!!error) {
                         console.log('Erreur dans la requête');
                         res.json({ message: "Erreur dans la requête !" });
                     } else {
                         const évènements = rows.map((row) => ({
                             évènement: row.Nom,
+                            URL: row.URL,
                             Description: row.Description,
                             "Date de début": row.Date_debut,
                             "Date de fin": row.Date_fin,

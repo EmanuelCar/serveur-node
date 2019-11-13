@@ -10,10 +10,10 @@ app.use(bodyParser.json());
 //ajouter un "j'aime"
 var liker = function (req, res) {
     tik = jwt.decodeTokenForUser(req, res);
-    var event = req.body.event;
-    if (event && tik) {
+    var URL = req.body.URL;
+    if (URL && tik) {
         co.connection.beginTransaction(function (error) {
-            co.connection.query("SELECT Id_evenements FROM evenement WHERE Nom = '" + event + "'", function (error, rows) {
+            co.connection.query("SELECT Id_image FROM image WHERE URL = '" + URL + "'", function (error, rows) {
                 if (!!error) {
                     console.log('Erreur dans la requête 2 ');
                     res.json({ message: "erreur de la requête" });
@@ -21,19 +21,19 @@ var liker = function (req, res) {
                     });
                 } else if (rows[0] == null) {
                     console.log('Requête réussie');
-                    res.json({ message: "l'évenement n'existe pas" });
+                    res.json({ message: "l'image n'existe pas" });
                     co.connection.rollback(function () {
                     });
                 } else {
-                    eve = rows[0].Id_evenements;
-                    co.connection.query("SELECT Aime,Commentaire FROM avis WHERE Id_utilisateur = ? AND Id_evenements = ?", [tik.payload.Id, eve], function (error, rows) {
+                    img = rows[0].Id_image;
+                    co.connection.query("SELECT Aime,Commentaire FROM avis WHERE Id_utilisateur = ? AND Id_image = ?", [tik.payload.Id, img], function (error, rows) {
                         if (!!error) {
                             console.log('Erreur dans la requête 3');
                             res.json({ message: "erreur de la requête" });
                             co.connection.rollback(function () {
                             });
                         } else if (rows[0] == null) {
-                            co.connection.query("INSERT INTO avis (Id_utilisateur,Id_evenements,Aime) VALUES (?,?,1) ", [tik.payload.Id, eve], function (error, rows) {
+                            co.connection.query("INSERT INTO avis (Id_utilisateur, Id_image, Aime) VALUES (?, ?, 1) ", [tik.payload.Id, img], function (error, rows) {
                                 if (!!error) {
                                     console.log('Erreur dans la requête 4 ');
                                     res.json({ message: "erreur de la requête" });
@@ -56,7 +56,7 @@ var liker = function (req, res) {
 
                         } else {
                             if (rows[0].Aime == 0) {
-                                co.connection.query("UPDATE avis SET Aime = 1 WHERE Id_evenements = ? AND Id_utilisateur = ?", [eve, tik.payload.Id],
+                                co.connection.query("UPDATE avis SET Aime = 1 WHERE Id_image = ? AND Id_utilisateur = ?", [img, tik.payload.Id],
                                     function (error, rows) {
                                         if (!!error) {
                                             console.log('Erreur dans la requête 5 ');
@@ -78,7 +78,7 @@ var liker = function (req, res) {
                                         }
                                     });
                             } else if (rows[0].Commentaire == null) {
-                                co.connection.query("DELETE FROM avis WHERE Id_evenements = ? AND Id_utilisateur = ?", [eve, tik.payload.Id],
+                                co.connection.query("DELETE FROM avis WHERE Id_image = ? AND Id_utilisateur = ? AND Aime = 1", [img, tik.payload.Id],
                                     function (error, rows) {
                                         if (!!error) {
                                             console.log('Erreur dans la requête 5 ');
@@ -100,7 +100,7 @@ var liker = function (req, res) {
                                         }
                                     });
                             } else {
-                                co.connection.query("UPDATE avis SET Aime = 0 WHERE Id_evenements = ? AND Id_utilisateur = ?", [eve, tik.payload.Id],
+                                co.connection.query("UPDATE avis SET Aime = 0 WHERE Id_image = ? AND Id_utilisateur = ?", [img, tik.payload.Id],
                                     function (error, rows) {
                                         if (!!error) {
                                             console.log('Erreur dans la requête 6 ');
@@ -136,73 +136,84 @@ var liker = function (req, res) {
 
 //ajouter un commentaire
 var comment = function (req, res) {
-    var commentaire = req.body.commentaire;
     tik = jwt.decodeTokenForUser(req, res);
-    var event = req.body.event;
-    var today = new Date();
-    var date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
-
-    if (tik && commentaire && event) {
-        co.connection.query("SELECT Id_utilisateur FROM utilisateur WHERE Id_utilisateur = ?", [tik.payload.Id], function (error, rows) {
-            if (!!error) {
-                console.log('Erreur dans la requête');
-                res.json({ message: "Erreur dans la requête !" });
-            } else if (rows.length == 0) {
-                res.json({ message: "Cet utilisateur n'existe pas !" })
-            } else {
-                co.connection.query("SELECT Nom, Id_evenements FROM evenement WHERE Nom = ? AND Date_fin <= ?", [event, date], function (error, rows) {
+    var URL = req.body.URL;
+    var commentaire = req.body.commentaire;
+    if (URL && tik) {
+        co.connection.beginTransaction(function (error) {
+            co.connection.query("SELECT Id_image FROM image WHERE URL = '" + URL + "'", function (error, rows) {
+                if (!!error) {
+                    console.log('Erreur dans la requête 2 ');
+                    res.json({ message: "erreur de la requête" });
+                    co.connection.rollback(function () {
+                    });
+                } else if (rows[0] == null) {
+                    console.log('Requête réussie');
+                    res.json({ message: "l'image n'existe pas" });
+                    co.connection.rollback(function () {
+                    });
+                } else {
+                    img = rows[0].Id_image;
+                    co.connection.query("SELECT Aime,Commentaire FROM avis WHERE Id_utilisateur = ? AND Id_image = ?", [tik.payload.Id, img], function (error, rows) {
                     if (!!error) {
-                        console.log('Erreur dans la requête');
-                        res.json({ message: "Erreur dans la requête !" });
-                    } else if (rows.length == 0) {
-                        res.json({ message: "Cet évènement n'existe pas ou n'est pas encore passé !" })
-                    } else {
-                        var id_ev = rows[0].Id_evenements
-                        co.connection.query("INSERT INTO avis (Commentaire, Id_utilisateur, Id_evenements) VALUE (?, ?, ?)", [commentaire, tik.payload.Id, id_ev], function (error, rows) {
+                        console.log('Erreur dans la requête 3');
+                        res.json({ message: "erreur de la requête" });
+                        co.connection.rollback(function () {
+                        });
+                    } else if (rows[0] == null) {
+                        console.log(com)
+                        co.connection.query("INSERT INTO avis (Id_utilisateur, Id_image, commentaire) VALUES (?, ?, ?) ", [tik.payload.Id, img, commentaire], function (error, rows) {
                             if (!!error) {
-                                console.log('Erreur dans la requête');
-                                res.json({ message: "Erreur dans la requête !" });
+                                console.log('Erreur dans la requête 4 ');
+                                res.json({ message: "erreur de la requête" });
+                                co.connection.rollback(function () {
+                                });
                             } else {
-                                res.json({ message: "Votre commentaire a bien été ajouté !" })
+                                co.connection.commit(function (error) {
+                                    if (!!error) {
+                                        console.log('Erreur dans la requête 4.5 ');
+                                        res.json({ message: "erreur de la requête" });
+                                        co.connection.rollback(function () {
+                                        });
+                                    } else {
+                                        console.log('Requête réussie !\n');
+                                        res.json({ message: "Commentaire ajouté !" });
+                                    }
+                                });
                             }
-                        })
-                    }
-                })
-            }
-        })
-    } else if (tik && event) {
-        co.connection.query("SELECT Id_utilisateur FROM utilisateur WHERE Id_utilisateur = ?", [tik.payload.Id], function (error, rows) {
-            if (!!error) {
-                console.log('Erreur dans la requête');
-                res.json({ message: "Erreur dans la requête !" });
-            } else if (rows.length == 0) {
-                res.json({ message: "Cet utilisateur n'existe pas !" })
-            } else {
-                co.connection.query("SELECT Nom FROM evenement WHERE Nom = ?", [event], function (error, rows) {
-                    if (!!error) {
-                        console.log('Erreur dans la requête');
-                        res.json({ message: "Erreur dans la requête !" });
-                    } else if (rows.length == 0) {
-                        res.json({ message: "Cet évènement n'existe pas !" })
+                        });
                     } else {
-                        res.json({ message: "Vous n'avez pas entré de commentaire !" });
-                    }
-                })
-            }
-        })
-    } else if (tik) {
-        co.connection.query("SELECT Id_utilisateur FROM utilisateur WHERE Id_utilisateur = ?", [tik.payload.Id], function (error, rows) {
-            if (!!error) {
-                console.log('Erreur dans la requête');
-                res.json({ message: "Erreur dans la requête !" });
-            } else if (rows.length == 0) {
-                res.json({ message: "Cet utilisateur n'existe pas !" })
-            } else {
-                res.json({ message: "Vous n'avez pas sélectionné d'évènement !" })
-            }
-        })
+                    console.log(commentaire)
+                        co.connection.query("UPDATE avis SET commentaire = ? WHERE Id_image = ? AND Id_utilisateur = ?", [commentaire, img, tik.payload.Id],
+                            function (error, rows) {
+                                if (!!error) {
+                                    console.log('Erreur dans la requête 5 ');
+                                    res.json({ message: "erreur de la requête" });
+                                    co.connection.rollback(function () {
+                                    });
+                                } else {
+                                    co.connection.commit(function (error) {
+                                        if (!!error) {
+                                            console.log('Erreur dans la requête 5.5 ');
+                                            res.json({ message: "erreur de la requête" });
+                                            co.connection.rollback(function () {
+                                            });
+                                        } else {
+                                            console.log('Requête réussie !\n');
+                                            res.json({ message: "message ajouté !" });
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+        });
+
     } else {
-        res.json({ message: "Vous n'êtes pas connecté, vous ne pouvez pas laisser de commentaire !" })
+        console.log('Erreur dans la requête');
+        res.json({ message: "Veuillez remplir tous les champs !" });
     }
 }
 
@@ -211,11 +222,11 @@ var suprcomm = function (req, res) {
     tik = jwt.decodeTokenForUser(req, res);
     var nom = req.body.nom;
     var prenom = req.body.prenom;
-    var event = req.body.event;
+    var URL = req.body.URL;
     var com = req.body.com;
-    if (nom && prenom && event && com) {
+    if (nom && prenom && URL && com) {
         if (tik.payload.Statut == "membre") {
-            co.connection.query("SELECT avis.Id_avis,avis.Aime FROM avis INNER JOIN evenement ON evenement.Id_evenements = avis.Id_evenements INNER JOIN utilisateur ON avis.Id_utilisateur = utilisateur.Id_utilisateur WHERE utilisateur.Nom = '" + nom + "' AND utilisateur.Prenom = '" + prenom + "' AND evenement.nom = '" + event + "' AND avis.Commentaire = '" + com + "'",
+            co.connection.query("SELECT avis.Id_avis, avis.Aime FROM avis INNER JOIN image ON avis.Id_image = image.Id_image INNER JOIN utilisateur ON avis.Id_utilisateur = utilisateur.Id_utilisateur WHERE utilisateur.Nom = ? AND utilisateur.Prenom = ? AND image.URL = ? AND avis.Commentaire = ?", [nom, prenom, URL, com],
                 function (error, rows) {
                     if (!!error) {
                         console.log('Erreur dans la requête');
@@ -224,29 +235,25 @@ var suprcomm = function (req, res) {
                         console.log('Requête réussie');
                         res.json({ message: "le commentaire n'existe pas" });
                     } else if (rows[0].Aime == 1) {
-                        co.connection.query("UPDATE avis SET Commentaire = NULL WHERE Id_avis = " + rows[0].Id_avis + "",
-                            function (error, rows) {
-                                if (!!error) {
-                                    console.log('Erreur dans la requête 2 ');
-                                    res.json({ message: "erreur de la requête" });
-                                } else {
-                                    console.log('Requête réussie !\n');
-                                    res.json({ message: "Commentaire supprimé" });
-                                }
-                            });
+                        co.connection.query("UPDATE avis SET Commentaire = NULL WHERE Id_avis = " + rows[0].Id_avis + "", function (error, rows) {
+                            if (!!error) {
+                                console.log('Erreur dans la requête 2 ');
+                                res.json({ message: "erreur de la requête" });
+                            } else {
+                                console.log('Requête réussie !\n');
+                                res.json({ message: "Commentaire supprimé" });
+                            }
+                        });
                     } else {
-                        co.connection.query("DELETE FROM avis WHERE Id_avis = " + rows[0].Id_avis + "",
-                            function (error, rows) {
-                                if (!!error) {
-                                    console.log('Erreur dans la requête 3 ');
-                                    res.json({ message: "erreur de la requête" });
-                                } else {
-                                    console.log('Requête réussie !\n');
-                                    res.json({ message: "Commentaire supprimé" });
-                                }
-
-                            });
-
+                        co.connection.query("DELETE FROM avis WHERE Id_avis = " + rows[0].Id_avis + "", function (error, rows) {
+                            if (!!error) {
+                                console.log('Erreur dans la requête 3 ');
+                                res.json({ message: "erreur de la requête" });
+                            } else {
+                                console.log('Requête réussie !\n');
+                                res.json({ message: "Commentaire supprimé" });
+                            }
+                        });
                     }
                 });
         } else {

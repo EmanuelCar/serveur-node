@@ -20,7 +20,7 @@ module.exports = {
         decode = decode.split(" ");
         var marche = jwt.verify(decode[1], JWT_SIGN_SECRET, function(error, decoded) {
             if(error) {
-               res.json({message: 'erreur'});
+               res.json({message: 'Veuillez vous reconnecter !'});
             } else {
                 marche = jwt.decode(decode[1], {complete: true});
                 return marche;

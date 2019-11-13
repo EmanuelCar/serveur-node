@@ -4,8 +4,8 @@ var connection = mysql.createConnection({
     host: "localhost",
     user: "root",
     port: "",
-    password: "",
-    database: "projet_web"
+    password: "mdpintrouvable",
+    database: "projet_web_v2"
 });
 
 module.exports.connection = connection;

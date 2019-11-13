@@ -12,17 +12,33 @@ app.use(bodyParser.json());
 var eventpar = function (req, res) {
     tik = jwt.decodeTokenForUser(req, res);
     event = req.body.event;
-    console.log(tik);
     if (tik && event) {
-        co.connection.query("INSERT INTO participer (Id_utilisateur,Id_evenements) SELECT Id_utilisateur, Id_evenements FROM utilisateur,evenement WHERE utilisateur.Id_utilisateur = ? AND evenement.Nom = ?", [tik.payload.Id, event], function (error, rows) {
+        co.connection.query("SELECT participer.Id_utilisateur, participer.Id_evenements FROM participer INNER JOIN evenement ON participer.Id_evenements = evenement.Id_evenements WHERE Id_utilisateur = ? AND evenement.Nom = ?", [tik.payload.Id, event], function(error, rows) {
             if (!!error) {
                 console.log('Erreur dans la requête');
                 res.json({ message: "erreur de la requête" });
+            } else if(rows.length == 1){
+                res.json({ message: "tu es déjà inscrit à cet évènement !" });
             } else {
-                console.log('Requête réussie !\n');
-                res.json({ message: "tu es bien inscrit" });
+                co.connection.query("INSERT INTO participer (Id_utilisateur,Id_evenements) SELECT Id_utilisateur, Id_evenements FROM utilisateur,evenement WHERE utilisateur.Id_utilisateur = ? AND evenement.Nom = ? AND visible = TRUE", [tik.payload.Id, event], function (error, rows) {
+                    if (!!error) {
+                        console.log('Erreur dans la requête');
+                        res.json({ message: "erreur de la requête" });
+                    } else {
+                        co.connection.query("SELECT participer.Id_utilisateur, participer.Id_evenements FROM participer INNER JOIN evenement ON participer.Id_evenements = evenement.Id_evenements WHERE Id_utilisateur = ? AND evenement.Nom = ?", [tik.payload.Id, event], function(error, rows) {
+                            if (!!error) {
+                                console.log('Erreur dans la requête');
+                                res.json({ message: "erreur de la requête" });
+                            } else if(rows.length == 0){
+                                res.json({ message: "tu ne peux pas t'inscrire à cet évènement" });
+                            } else {
+                                res.json({ message: "tu es bien inscrit" });
+                            }
+                        })
+                    }
+                })
             }
-        });
+        })
     } else {
         console.log('Erreur dans la requête');
         res.json({ message: "Veuillez remplir tous les champs !" });

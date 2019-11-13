@@ -171,24 +171,23 @@ var commandes = function (req, res) {
 
 //Passer sa commande
 var passcommand = function (req, res) {
-    var mail = req.body.mail;
-    if (mail) {
-        co.connection.query("SELECT Mail, Id_utilisateur FROM utilisateur WHERE Mail = ?", [mail], function (error, rows) {
+    tik = jwt.decodeTokenForUser(req, res);
+    if (tik) {
+        co.connection.query("SELECT Mail, Id_utilisateur FROM utilisateur WHERE Mail = ?", [tik.payload.Id], function (error, rows) {
             if (!!error) {
                 console.log('Erreur dans la requête');
                 res.json({ message: "Erreur dans la requête !" });
             } else if (rows.length == 0) {
                 res.json({ message: "Cet utilisateur n'existe pas !" })
             } else {
-                var id_ut = rows[0].Id_utilisateur;
-                co.connection.query("SELECT Id_commande FROM commande WHERE Id_utilisateur = ?", [rows[0].Id_utilisateur], function (error, rows) {
+                co.connection.query("SELECT Id_commande FROM commande WHERE Id_utilisateur = ?", [tik.payload.Id], function (error, rows) {
                     if (!!error) {
                         console.log('Erreur dans la requête');
                         res.json({ message: "Erreur dans la requête !" });
                     } else if (rows.length == 0) {
                         res.json({ message: "Vous n'avez pas de commande en cours !" })
                     } else {
-                        co.connection.query("UPDATE commande SET Fini = TRUE WHERE Id_utilisateur = ?", [id_ut], function (error, rows) {
+                        co.connection.query("UPDATE commande SET Fini = TRUE WHERE Id_utilisateur = ?", [tik.payload.Id], function (error, rows) {
                             if (!!error) {
                                 console.log('Erreur dans la requête');
                                 res.json({ message: "Erreur dans la requête !" });

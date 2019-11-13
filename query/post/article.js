@@ -170,45 +170,60 @@ var addarticle = function (req, res) {
 //Les membres du BDE peuvent supprimer un article
 var suprarticle = function (req, res) {
     var article = req.body.article;
-    var mail = req.body.mail;
-    if (mail && article) {
-        co.connection.query("SELECT mail FROM utilisateur WHERE mail = ?", [mail], function (error, rows) {
-            if (!!error) {
-                console.log('Erreur dans la requête');
-                res.json({ message: "Erreur dans la requête !" });
-            } else if (rows.length == 0) {
-                res.json({ message: "Cet utilisateur n'existe pas !" })
-            } else {
-                co.connection.query("SELECT Mail, Id_Statut FROM utilisateur WHERE Mail = ?", [mail], function (error, rows) {
-                    if (!!error) {
-                        console.log('Erreur dans la requête');
-                        res.json({ message: "Erreur dans la requête !" });
-                    } else if (rows[0].Id_Statut == 2) {
-                        co.connection.query("SELECT Nom FROM article WHERE Nom = ?", [article], function (error, rows) {
-                            if (!!error) {
-                                console.log('Erreur dans la requête');
-                                res.json({ message: "Erreur dans la requête !" });
-                            } else if (rows.length == 0) {
-                                res.json({ message: "Cet article n'existe pas !" })
-                            } else {
-                                co.connection.query("DELETE FROM article WHERE Nom = ?", [article], function (error, rows) {
+    tik = jwt.decodeTokenForUser(req, res);
+    if (tik && article) {
+        if (tik.payload.Statut == "membre") {
+            co.connection.query("SELECT Id_utilisateur FROM utilisateur WHERE Id_utilisateur = ?", [tik.payload.Id], function (error, rows) {
+                if (!!error) {
+                    console.log('Erreur dans la requête 1');
+                    res.json({ message: "Erreur dans la requête !" });
+                } else if (rows.length == 0) {
+                    res.json({ message: "Cet utilisateur n'existe pas !" })
+                } else {
+                    co.connection.query("SELECT Nom, Id_Article FROM article WHERE Nom = ?", [article], function (error, rows) {
+                        if (!!error) {
+                            console.log('Erreur dans la requête 2');
+                            res.json({ message: "Erreur dans la requête !" });
+                        } else if (rows.length == 0) {
+                            res.json({ message: "Cet article n'existe pas !" })
+                        } else {
+                            co.connection.beginTransaction(function(error){
+                                co.connection.query("DELETE FROM provenir WHERE Id_Article = ?", [rows[0].Id_Article], function (error, rows) {
                                     if (!!error) {
-                                        console.log('Erreur dans la requête');
+                                        console.log('Erreur dans la requête 3');
                                         res.json({ message: "Erreur dans la requête !" });
+                                        co.connection.rollback(function(){
+                                        });
                                     } else {
-                                        res.json({ message: "L'article a bien été supprimé !" })
+                                        co.connection.query("DELETE FROM article WHERE Nom = ?", [article], function (error, rows) {
+                                            if (!!error) {
+                                                console.log('Erreur dans la requête 4');
+                                                res.json({ message: "Erreur dans la requête !" });
+                                                co.connection.rollback(function(){
+                                                });
+                                            } else {
+                                                co.connection.commit(function(error){
+                                                    if(!!error) {
+                                                        co.connection.rollback(function(){
+                                                        });
+                                                    } else {
+                                                        res.json({ message: "L'article a bien été supprimé !" })
+                                                    }
+                                                })
+                                            }
+                                        })
                                     }
                                 })
-                            }
-                        })
-                    } else {
-                        res.json({ message: "Vous n'avez pas les droits pour supprimer un article !" })
-                    }
-                })
-            }
-        })
-    } else if (mail) {
-        co.connection.query("SELECT mail FROM utilisateur WHERE mail = ?", [mail], function (error, rows) {
+                            })
+                        }
+                    })
+                }
+            })
+        } else {
+            res.json({ message: "Vous n'avez pas les droits pour supprimer un article !" })
+        }
+    } else if (tik) {
+        co.connection.query("SELECT Id_utilisateur FROM utilisateur WHERE Id_utilisateur = ?", [tik.payload.Id], function (error, rows) {
             if (!!error) {
                 console.log('Erreur dans la requête');
                 res.json({ message: "Erreur dans la requête !" });
@@ -223,73 +238,8 @@ var suprarticle = function (req, res) {
     }
 }
 
-var best3 = function (req, res) {
-    var lieu = req.body.lieu;
-    if (lieu) {
-        co.connection.query("SELECT Lieux FROM localisation WHERE Lieux = ?", [lieu], function (error, rows) {
-            if (!!error) {
-                console.log('Erreur dans la requête');
-                res.json({ message: "Erreur dans la requête !" });
-            } else if (rows.length == 0) {
-                res.json({ message: "Veuillez sélectionner une localisation valide !" })
-            } else {
-                co.connection.query("SELECT article.Nom, SUM(Quantite) AS Quantité_totale FROM acheter INNER JOIN article ON acheter.Id_Article = article.Id_Article INNER JOIN provenir ON provenir.Id_article = article.Id_article INNER JOIN localisation ON localisation.Id_Localisation = provenir.Id_Localisation INNER JOIN commande ON acheter.Id_commande = commande.Id_commande WHERE commande.Fini = TRUE AND localisation.Lieux = ? GROUP BY article.Nom ORDER BY Quantité_totale DESC LIMIT 3", [lieu], function (error, rows) {
-                    if (!!error) {
-                        console.log('Erreur dans la requête');
-                        res.json({ message: "Erreur dans la requête !" });
-                    } else if (rows.length == 0) {
-                        res.json({ message: "Il n'y a pas encore d'articles commandé !" })
-                    } else if (rows.length == 1) {
-                        res.json({
-                            "Article 1":
-                            {
-                                "Nom": rows[0].Nom,
-                                "Quantité": rows[0].Quantité_totale
-                            }
-                        })
-                    } else if (rows.length == 2) {
-                        res.json({
-                            "Article 1":
-                            {
-                                "Nom": rows[0].Nom,
-                                "Quantité": rows[0].Quantité_totale
-                            },
-                            "Article 2":
-                            {
-                                "Nom": rows[1].Nom,
-                                "Quantité": rows[1].Quantité_totale
-                            }
-                        })
-                    } else {
-                        res.json({
-                            "Article 1":
-                            {
-                                "Nom": rows[0].Nom,
-                                "Quantité": rows[0].Quantité_totale
-                            },
-                            "Article 2":
-                            {
-                                "Nom": rows[1].Nom,
-                                "Quantité": rows[1].Quantité_totale
-                            },
-                            "Article 3":
-                            {
-                                "Nom": rows[2].Nom,
-                                "Quantité": rows[2].Quantité_totale
-                            }
-                        })
-                    }
-                })
-            }
-        })
-    } else {
-        res.json({ message: "Veuillez saisir une localisation" });
-    }
-}
-
 module.exports = {
     add,
-	addarticle,
-	suprarticle,
-	best3
+    addarticle,
+    suprarticle
 };

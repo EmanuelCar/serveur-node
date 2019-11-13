@@ -10,30 +10,35 @@ app.use(bodyParser.json());
 //Les membres du BDE peuvent récupéérer la liste des participants  
 var participant = function (req, res) {
     var event = req.body.event;
-    if (event) {
-        co.connection.query("SELECT Nom FROM evenement WHERE Nom = ?", [event], function (error, rows) {
-            if (!!error) {
-                console.log('Erreur dans la requête');
-                res.json({ message: "Erreur dans la requête !" });
-            } else if (rows.length == 0) {
-                res.json({ message: "veuillez sélectionner un évènement existant !" })
-            } else {
-                co.connection.query("SELECT evenement.Nom AS évènement, utilisateur.Nom, utilisateur.Prenom FROM participer INNER JOIN evenement ON participer.Id_evenements = evenement.Id_evenements INNER JOIN utilisateur ON participer.Id_Utilisateur = utilisateur.Id_Utilisateur WHERE evenement.Nom = ?", [event], function (error, rows) {
-                    if (!!error) {
-                        console.log('Erreur dans la requête');
-                        res.json({ message: "Erreur dans la requête !" });
-                    } else if (rows.length == 0) {
-                        res.json({ message: "Il n'y a pas encore de participant à cet évènement !" })
-                    } else {
-                        const participants = rows.map((row) => ({
-                            Nom: row.Nom,
-                            Prenom: row.Prenom,
-                        }))
-                        res.json({ participants });
-                    }
-                })
-            }
-        })
+    tik = jwt.decodeTokenForUser(req, res);
+    if (event && tik) {
+        if (tik.payload.Statut == "membre") {
+            co.connection.query("SELECT Nom FROM evenement WHERE Nom = ?", [event], function (error, rows) {
+                if (!!error) {
+                    console.log('Erreur dans la requête');
+                    res.json({ message: "Erreur dans la requête !" });
+                } else if (rows.length == 0) {
+                    res.json({ message: "veuillez sélectionner un évènement existant !" })
+                } else {
+                    co.connection.query("SELECT evenement.Nom AS évènement, utilisateur.Nom, utilisateur.Prenom FROM participer INNER JOIN evenement ON participer.Id_evenements = evenement.Id_evenements INNER JOIN utilisateur ON participer.Id_Utilisateur = utilisateur.Id_Utilisateur WHERE evenement.Nom = ?", [event], function (error, rows) {
+                        if (!!error) {
+                            console.log('Erreur dans la requête');
+                            res.json({ message: "Erreur dans la requête !" });
+                        } else if (rows.length == 0) {
+                            res.json({ message: "Il n'y a pas encore de participant à cet évènement !" })
+                        } else {
+                            const participants = rows.map((row) => ({
+                                Nom: row.Nom,
+                                Prenom: row.Prenom,
+                            }))
+                            res.json({ participants });
+                        }
+                    })
+                }
+            })
+        } else {
+            res.json({ message: "Vous devez être un membre du BDE pour pouvoir télécharger la liste des participants" });
+        }
     } else {
         res.json({ message: "veuillez sélectionner un évènement !" })
     }
@@ -43,13 +48,14 @@ var participant = function (req, res) {
 var actuevent = function (req, res) {
     var today = new Date();
     var date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
-    var lieu = req.body.lieu;
-    if (lieu) {
-        co.connection.query("SELECT Lieux FROM localisation WHERE Lieux = ?", [lieu], function (error, rows) {
+    tik = jwt.decodeTokenForUser(req, res);
+    if (tik) {
+        co.connection.query("SELECT Lieux FROM localisation WHERE Lieux = ?", [tik.payload.Lieu], function (error, rows) {
             if (rows.length == 0) {
                 res.json({ message: "Veuillez sélectionner une localisation existante !" });
             } else {
-                co.connection.query("SELECT Nom, Description, Date_debut, Date_fin, localisation.Lieux FROM evenement INNER JOIN localisation ON evenement.Id_Localisation = localisation.Id_Localisation WHERE Date_fin >= ? AND localisation.Lieux = ?", [date, lieu], function (error, rows) {
+                console.log(tik.payload.Lieu);
+                co.connection.query("SELECT Nom, Description, Date_debut, Date_fin, localisation.Lieux FROM evenement INNER JOIN localisation ON evenement.Id_Localisation = localisation.Id_Localisation WHERE Date_fin >= ? AND localisation.Lieux = ?", [date, tik.payload.Lieu], function (error, rows) {
                     if (!!error) {
                         console.log('Erreur dans la requête');
                         res.json({ message: "Erreur dans la requête !" });
@@ -75,13 +81,13 @@ var actuevent = function (req, res) {
 var pactuevent = function (req, res) {
     var today = new Date();
     var date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
-    var lieu = req.body.lieu;
-    if (lieu) {
-        co.connection.query("SELECT Lieux FROM localisation WHERE Lieux = ?", [lieu], function (error, rows) {
+    tik = jwt.decodeTokenForUser(req, res);
+    if (tik) {
+        co.connection.query("SELECT Lieux FROM localisation WHERE Lieux = ?", [tik.payload.Lieu], function (error, rows) {
             if (rows.length == 0) {
                 res.json({ message: "Veuillez sélectionner une localisation existante !" });
             } else {
-                co.connection.query("SELECT Nom, Description, Date_debut, Date_fin, localisation.Lieux FROM evenement INNER JOIN localisation ON evenement.Id_Localisation = localisation.Id_Localisation WHERE Date_fin < ? AND localisation.Lieux = ?", [date, lieu], function (error, rows) {
+                co.connection.query("SELECT Nom, Description, Date_debut, Date_fin, localisation.Lieux FROM evenement INNER JOIN localisation ON evenement.Id_Localisation = localisation.Id_Localisation WHERE Date_fin < ? AND localisation.Lieux = ?", [date, tik.payload.Lieu], function (error, rows) {
                     if (!!error) {
                         console.log('Erreur dans la requête');
                         res.json({ message: "Erreur dans la requête !" });

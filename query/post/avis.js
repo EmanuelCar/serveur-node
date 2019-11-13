@@ -150,20 +150,19 @@ var liker = function (req, res) {
 
 var comment = function (req, res) {
     var commentaire = req.body.commentaire;
-    var mail = req.body.mail;
+    tik = jwt.decodeTokenForUser(req, res);
     var event = req.body.event;
     var today = new Date();
     var date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
 
-    if (mail && commentaire && event) {
-        co.connection.query("SELECT Mail, Id_utilisateur FROM utilisateur WHERE Mail = ?", [mail], function (error, rows) {
+    if (tik && commentaire && event) {
+        co.connection.query("SELECT Id_utilisateur FROM utilisateur WHERE Id_utilisateur = ?", [tik.payload.Id], function (error, rows) {
             if (!!error) {
                 console.log('Erreur dans la requête');
                 res.json({ message: "Erreur dans la requête !" });
             } else if (rows.length == 0) {
                 res.json({ message: "Cet utilisateur n'existe pas !" })
             } else {
-                var id_ut = rows[0].Id_utilisateur
                 co.connection.query("SELECT Nom, Id_evenements FROM evenement WHERE Nom = ? AND Date_fin <= ?", [event, date], function (error, rows) {
                     if (!!error) {
                         console.log('Erreur dans la requête');
@@ -172,7 +171,7 @@ var comment = function (req, res) {
                         res.json({ message: "Cet évènement n'existe pas ou n'est pas encore passé !" })
                     } else {
                         var id_ev = rows[0].Id_evenements
-                        co.connection.query("INSERT INTO avis (Commentaire, Id_utilisateur, Id_evenements) VALUE (?, ?, ?)", [commentaire, id_ut, id_ev], function (error, rows) {
+                        co.connection.query("INSERT INTO avis (Commentaire, Id_utilisateur, Id_evenements) VALUE (?, ?, ?)", [commentaire, tik.payload.Id, id_ev], function (error, rows) {
                             if (!!error) {
                                 console.log('Erreur dans la requête');
                                 res.json({ message: "Erreur dans la requête !" });
@@ -184,8 +183,8 @@ var comment = function (req, res) {
                 })
             }
         })
-    } else if (mail && event) {
-        co.connection.query("SELECT Mail FROM utilisateur WHERE Mail = ?", [mail], function (error, rows) {
+    } else if (tik && event) {
+        co.connection.query("SELECT Id_utilisateur FROM utilisateur WHERE Id_utilisateur = ?", [tik.payload.Id], function (error, rows) {
             if (!!error) {
                 console.log('Erreur dans la requête');
                 res.json({ message: "Erreur dans la requête !" });
@@ -204,8 +203,8 @@ var comment = function (req, res) {
                 })
             }
         })
-    } else if (mail) {
-        co.connection.query("SELECT mail FROM utilisateur WHERE mail = ?", [mail], function (error, rows) {
+    } else if (tik) {
+        co.connection.query("SELECT Id_utilisateur FROM utilisateur WHERE Id_utilisateur = ?", [tik.payload.Id], function (error, rows) {
             if (!!error) {
                 console.log('Erreur dans la requête');
                 res.json({ message: "Erreur dans la requête !" });

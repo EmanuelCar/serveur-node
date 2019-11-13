@@ -72,7 +72,7 @@ myRouter.route('/article/categorie/add')    //Ajouter une catégorie
     .post(post_article.add)
 
 myRouter.route('/article/best')             //Afficher les 3 articles les plus vendus
-    .post(post_article.best3)
+    .get(get_article.best3)
 
 myRouter.route('/article/suppr')            //Supprimer un article
     .post(post_article.suprarticle)
@@ -111,7 +111,7 @@ myRouter.route('/photo/add')                //Ajouter une photo
     .post(post_photo.addphoto)
 
 myRouter.route('/photo/recup')              //Récupérer toutes les photos
-    .get(get_photo.recupphoto) //modif method
+    .get(get_photo.recupphoto)    //modif method
 
 myRouter.route('/photo/suppr')              //Supprimer une photo
     .post(post_photo.suprphoto)   //modif method

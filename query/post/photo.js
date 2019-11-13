@@ -55,19 +55,25 @@ var addphoto = function (req, res) {
 
 //Les membres du BDE peuvent supprimer des photos
 var suprphoto = function (req, res) {
+    tik = jwt.decodeTokenForUser(req, res);
     var URL = req.query.URL;
     if (URL) {
-        co.connection.query("DELETE FROM `image` WHERE URL = '" + URL + "'",
-            function (error, rows) {
-                if (!!error) {
-                    console.log('Erreur dans la requête ');
-                    res.json({ message: "erreur de la requête" });
-                } else {
-                    console.log('Requête réussie !\n');
-                    res.json({ message: "photo supprimée" });
-                }
+        if (tik.payload.Statut == "membre") {
+            co.connection.query("DELETE FROM `image` WHERE URL = '" + URL + "'",
+                function (error, rows) {
+                    if (!!error) {
+                        console.log('Erreur dans la requête ');
+                        res.json({ message: "erreur de la requête" });
+                    } else {
+                        console.log('Requête réussie !\n');
+                        res.json({ message: "photo supprimée" });
+                    }
 
-            });
+                });
+        } else {
+            console.log('access denied ');
+            res.json({ message: "Vous n'avais pas les droits pour effectuer cette action  !" });
+        }
     } else {
         console.log('Erreur dans la requête');
         res.json({ message: "Veuillez remplir tous les champs !" });

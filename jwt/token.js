@@ -18,7 +18,6 @@ module.exports = {
     decodeTokenForUser: function(req, res) {
         var decode = req.headers['authorization'];
         decode = decode.split(" ");
-        console.log(decode[1]);
         var marche = jwt.verify(decode[1], JWT_SIGN_SECRET, function(error, decoded) {
             if(error) {
                res.json({message: 'erreur'});

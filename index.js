@@ -126,6 +126,9 @@ myRouter.route('/panier/user')              //Afficher le panier
 
 myRouter.route('/panier/pass')              //Passer la commande
     .post(post_panier.passcommand)
+
+myRouter.route('/panier/delete')
+    .post(post_panier.suprpanier)
 //-------------------------------------------------------
 
 //Autres-------------------------------------------------

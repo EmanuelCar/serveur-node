@@ -9,13 +9,13 @@ app.use(bodyParser.json());
 
 //Ajouter des articles au panier
 var panier = function (req, res) {
-    var mail = req.body.mail;
+    tik = jwt.decodeTokenForUser(req, res);
     var article = req.body.article;
     var com = "";
     var quantite = req.body.quantite;
-    if (mail && article && quantite) {
+    if (article && quantite && tik) {
         co.connection.beginTransaction(function (error) {
-            co.connection.query("SELECT Id_commande FROM commande INNER JOIN utilisateur ON utilisateur.Id_utilisateur = commande.Id_utilisateur WHERE utilisateur.mail = '" + mail + "' AND commande.Fini = 0",
+            co.connection.query("SELECT Id_commande FROM commande INNER JOIN utilisateur ON utilisateur.Id_utilisateur = commande.Id_utilisateur WHERE utilisateur.Id_utilisateur = ? AND commande.Fini = 0", [tik.payload.Id],
                 function (error, rows) {
                     if (!!error) {
                         console.log('Erreur dans la requête 1');
@@ -23,14 +23,14 @@ var panier = function (req, res) {
                         });
                         res.json({ message: "echec de la requête" });
                     } else if (rows[0] == null) {
-                        co.connection.query("INSERT INTO commande (Id_utilisateur,Fini) VALUES ((SELECT Id_utilisateur FROM utilisateur WHERE utilisateur.mail = '" + mail + "'),0) ", function (error, rows) {
+                        co.connection.query("INSERT INTO commande (Id_utilisateur,Fini) VALUES (?,0) ", [tik.payload.Id], function (error, rows) {
                             if (!!error) {
                                 console.log('Erreur dans la requête 2 ');
                                 res.json({ message: "echec de la requête" });
                                 co.connection.rollback(function () {
                                 });
                             } else {
-                                co.connection.query("SELECT Id_commande FROM commande INNER JOIN utilisateur ON commande.Id_utilisateur = utilisateur.Id_utilisateur WHERE utilisateur.Mail = '" + mail + "' AND commande.fini = 0",
+                                co.connection.query("SELECT Id_commande FROM commande INNER JOIN utilisateur ON commande.Id_utilisateur = utilisateur.Id_utilisateur WHERE utilisateur.Id_utilisateur = ? AND commande.fini = 0", [tik.payload.Id],
                                     function (error, rows) {
                                         if (!!error) {
                                             console.log('Erreur dans la requête 3');
@@ -147,10 +147,9 @@ var panier = function (req, res) {
 
 //Afficher le panier
 var commandes = function (req, res) {
-    var nom = req.body.nom;
-    var prenom = req.body.prenom
-    if (nom && prenom) {
-        co.connection.query("SELECT article.Nom, acheter.Quantite FROM `article` INNER JOIN acheter ON article.Id_Article = acheter.Id_Article INNER JOIN commande ON commande.Id_commande = acheter.id_commande INNER JOIN utilisateur On utilisateur.Id_utilisateur = commande.Id_utilisateur WHERE utilisateur.Nom = '" + nom + "' AND utilisateur.Prenom = '" + prenom + "' AND commande.Fini = 0",
+    tik = jwt.decodeTokenForUser(req, res);
+    if (tik) {
+        co.connection.query("SELECT article.Nom, acheter.Quantite FROM `article` INNER JOIN acheter ON article.Id_Article = acheter.Id_Article INNER JOIN commande ON commande.Id_commande = acheter.id_commande INNER JOIN utilisateur On utilisateur.Id_utilisateur = commande.Id_utilisateur WHERE utilisateur.Id_utilisateur = ? AND commande.Fini = 0", [tik.payload.Id],
             function (error, rows) {
                 if (!!error) {
                     console.log('Erreur dans la requête');
@@ -204,8 +203,43 @@ var passcommand = function (req, res) {
     }
 }
 
+//Supprimer des articles du panier
+var suprpanier = function (req, res) {
+    tik = jwt.decodeTokenForUser(req, res);
+    var article = req.body.article;
+    var com = "";
+    if (article && tik) {
+        co.connection.query("SELECT acheter.Id_Article,acheter.Id_commande FROM acheter INNER JOIN article ON article.Id_Article = acheter.Id_Article INNER JOIN commande ON commande.Id_commande = acheter.Id_commande WHERE commande.Fini = 0 AND article.Nom = ? AND commande.Id_utilisateur = ? ", [article, tik.payload.Id],
+            function (error, rows) {
+                if (!!error) {
+                    console.log('Erreur dans la requête 1 ');
+                    res.json({ message: "echec de la requête" });
+                } else if (rows[0] == null) {
+                    console.log('Requête réussie');
+                    res.json({ message: "l'article n'existe pas" });
+                } else {
+                    co.connection.query("DELETE FROM acheter WHERE Id_Article = ? and Id_commande = ?", [rows[0].Id_Article, rows[0].Id_commande],
+                        function (error, rows) {
+                            if (!!error) {
+                                console.log('Erreur dans la requête 1 ');
+                                res.json({ message: "echec de la requête" });
+                            } else {
+                                console.log('Requête réussie !\n');
+                                res.json({ message: "suppresion de la commande" });
+                            }
+
+                        });
+                }
+            });
+    } else {
+        console.log('Erreur dans la requête');
+        res.json({ message: "Veuillez remplir tous les champs !" });
+    }
+}
+
 module.exports = {
     commandes,
     panier,
-    passcommand
+    passcommand,
+    suprpanier
 };

@@ -56,7 +56,7 @@ myRouter.route('/avis/like')
     .post(geting.liker)
 
 myRouter.route('/panier/user')
-    .post(geting.commandes)
+    .get(geting.commandes)
 
 myRouter.route('/photo/suppr')
     .get(geting.suprphoto)
@@ -97,6 +97,8 @@ myRouter.route('/passcommand')
 
 myRouter.route('/best3')
     .post(metpost.best3)
-    
+
+myRouter.route('/paniersu')
+    .post(geting.supprPanier)
 // Nous demandons à l'application d'utiliser notre routeur
 app.use(myRouter);

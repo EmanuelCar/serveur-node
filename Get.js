@@ -48,7 +48,7 @@ var add = function (req, res) {
 var article = function (req, res) {
     tik = jwt.decodeTokenForUser(req, res);
     if (tik) {
-        co.connection.query("SELECT article.Nom,Stock,Prix,Description,categorie.Nom as Categorie,image.URL FROM `article` INNER JOIN categorie ON article.ID_Categorie = categorie.Id_Categorie INNER JOIN image ON image.Id_image = article.ID_image INNER JOIN provenir ON provenir.Id_article = article.Id_article INNER JOIN Localisation ON Localisation.Id_Localisation = Provenir.Id_Localisation WHERE Localisation.Lieux = ?",[tik.payload.Lieu],
+        co.connection.query("SELECT article.Nom,Stock,Prix,Description,categorie.Nom as Categorie,image.URL FROM `article` INNER JOIN categorie ON article.ID_Categorie = categorie.Id_Categorie INNER JOIN image ON image.Id_image = article.ID_image INNER JOIN provenir ON provenir.Id_article = article.Id_article INNER JOIN Localisation ON Localisation.Id_Localisation = Provenir.Id_Localisation WHERE Localisation.Lieux = ?", [tik.payload.Lieu],
             function (error, rows) {
                 if (!!error) {
                     console.log('Erreur dans la requête');
@@ -75,7 +75,7 @@ var article = function (req, res) {
 var articlebyprix = function (req, res) {
     tik = jwt.decodeTokenForUser(req, res);
     if (tik) {
-        co.connection.query("SELECT article.Nom,Stock,Prix,Description,categorie.Nom as Categorie,image.URL FROM `article` INNER JOIN categorie ON article.ID_Categorie = categorie.Id_Categorie INNER JOIN image ON image.Id_image = article.ID_image INNER JOIN provenir ON provenir.Id_article = article.Id_article INNER JOIN Localisation ON Localisation.Id_Localisation = Provenir.Id_Localisation WHERE Localisation.Lieux = ? ORDER BY Prix ASC",[tik.payload.Lieu],
+        co.connection.query("SELECT article.Nom,Stock,Prix,Description,categorie.Nom as Categorie,image.URL FROM `article` INNER JOIN categorie ON article.ID_Categorie = categorie.Id_Categorie INNER JOIN image ON image.Id_image = article.ID_image INNER JOIN provenir ON provenir.Id_article = article.Id_article INNER JOIN Localisation ON Localisation.Id_Localisation = Provenir.Id_Localisation WHERE Localisation.Lieux = ? ORDER BY Prix ASC", [tik.payload.Lieu],
             function (error, rows) {
                 if (!!error) {
                     console.log('Requête réussie !\n');
@@ -556,7 +556,7 @@ var suprphoto = function (req, res) {
 var filtrecat = function (req, res) {
     tik = jwt.decodeTokenForUser(req, res);
     if (tik) {
-        co.connection.query("SELECT article.Nom,Stock,Prix,Description,categorie.Nom as Categorie,image.URL FROM `article` INNER JOIN categorie ON article.ID_Categorie = categorie.Id_Categorie INNER JOIN image ON image.Id_image = article.ID_image INNER JOIN provenir ON provenir.Id_article = article.Id_article INNER JOIN Localisation ON Localisation.Id_Localisation = Provenir.Id_Localisation WHERE Localisation.Lieux = ? ORDER BY Categorie ASC",[tik.payload.Lieu],
+        co.connection.query("SELECT article.Nom,Stock,Prix,Description,categorie.Nom as Categorie,image.URL FROM `article` INNER JOIN categorie ON article.ID_Categorie = categorie.Id_Categorie INNER JOIN image ON image.Id_image = article.ID_image INNER JOIN provenir ON provenir.Id_article = article.Id_article INNER JOIN Localisation ON Localisation.Id_Localisation = Provenir.Id_Localisation WHERE Localisation.Lieux = ? ORDER BY Categorie ASC", [tik.payload.Lieu],
             function (error, rows) {
                 if (!!error) {
                     console.log('Requête réussie !\n');
@@ -587,7 +587,7 @@ var panier = function (req, res) {
     var quantite = req.body.quantite;
     if (article && quantite && tik) {
         co.connection.beginTransaction(function (error) {
-            co.connection.query("SELECT Id_commande FROM commande INNER JOIN utilisateur ON utilisateur.Id_utilisateur = commande.Id_utilisateur WHERE utilisateur.Id_utilisateur = ? AND commande.Fini = 0",[tik.payload.Id],
+            co.connection.query("SELECT Id_commande FROM commande INNER JOIN utilisateur ON utilisateur.Id_utilisateur = commande.Id_utilisateur WHERE utilisateur.Id_utilisateur = ? AND commande.Fini = 0", [tik.payload.Id],
                 function (error, rows) {
                     if (!!error) {
                         console.log('Erreur dans la requête 1');
@@ -595,14 +595,14 @@ var panier = function (req, res) {
                         });
                         res.json({ message: "echec de la requête" });
                     } else if (rows[0] == null) {
-                        co.connection.query("INSERT INTO commande (Id_utilisateur,Fini) VALUES (?,0) ",[tik.payload.Id], function (error, rows) {
+                        co.connection.query("INSERT INTO commande (Id_utilisateur,Fini) VALUES (?,0) ", [tik.payload.Id], function (error, rows) {
                             if (!!error) {
                                 console.log('Erreur dans la requête 2 ');
                                 res.json({ message: "echec de la requête" });
                                 co.connection.rollback(function () {
                                 });
                             } else {
-                                co.connection.query("SELECT Id_commande FROM commande INNER JOIN utilisateur ON commande.Id_utilisateur = utilisateur.Id_utilisateur WHERE utilisateur.Id_utilisateur = ? AND commande.fini = 0",[tik.payload.Id],
+                                co.connection.query("SELECT Id_commande FROM commande INNER JOIN utilisateur ON commande.Id_utilisateur = utilisateur.Id_utilisateur WHERE utilisateur.Id_utilisateur = ? AND commande.fini = 0", [tik.payload.Id],
                                     function (error, rows) {
                                         if (!!error) {
                                             console.log('Erreur dans la requête 3');
@@ -717,6 +717,38 @@ var panier = function (req, res) {
     }
 }
 
+var supprPanier = function (req, res) {
+    tik = jwt.decodeTokenForUser(req, res);
+    var article = req.body.article;
+    var com = "";
+    if (article && tik) {
+        co.connection.query("SELECT acheter.Id_Article,acheter.Id_commande FROM acheter INNER JOIN article ON article.Id_Article = acheter.Id_Article INNER JOIN commande ON commande.Id_commande = acheter.Id_commande WHERE commande.Fini = 0 AND article.Nom = ? AND commande.Id_utilisateur = ? ", [article, tik.payload.Id],
+            function (error, rows) {
+                if (!!error) {
+                    console.log('Erreur dans la requête 1 ');
+                    res.json({ message: "echec de la requête" });
+                } else if (rows[0] == null) {
+                    console.log('Requête réussie');
+                    res.json({ message: "l'article n'existe pas" });
+                } else {
+                    co.connection.query("DELETE FROM acheter WHERE Id_Article = ? and Id_commande = ?", [rows[0].Id_Article, rows[0].Id_commande],
+                        function (error, rows) {
+                            if (!!error) {
+                                console.log('Erreur dans la requête 1 ');
+                                res.json({ message: "echec de la requête" });
+                            } else {
+                                console.log('Requête réussie !\n');
+                                res.json({ message: "suppresion de la commande" });
+                            }
+
+                        });
+                }
+            });
+    } else {
+        console.log('Erreur dans la requête');
+        res.json({ message: "Veuillez remplir tous les champs !" });
+    }
+}
 
 module.exports = {
     add,
@@ -730,6 +762,7 @@ module.exports = {
     suprcomm,
     suprphoto,
     filtrecat,
-    panier
+    panier,
+    supprPanier
 };
 

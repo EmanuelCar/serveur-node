@@ -125,9 +125,8 @@ var addarticle = function (req, res) {
     var URL = req.body.URL;
     var cat = req.body.cat;
     var prix = req.body.prix;
-    var lieux = req.body.lieux;
     var description = req.body.description;
-    if (nom && URL && cat && prix && description && lieux && tik) {
+    if (nom && URL && cat && prix && description && tik) {
         if (tik.payload.Statut == "membre") {
             co.connection.beginTransaction(function (error) {
                 co.connection.query("SELECT Nom FROM article WHERE Nom = '" + nom + "'", function (error, rows) {
@@ -205,7 +204,7 @@ var addarticle = function (req, res) {
                                                                                         co.connection.rollback(function () {
                                                                                         });
                                                                                     } else {
-                                                                                        co.connection.query("INSERT INTO provenir (Id_Localisation,Id_Article) VALUES ((SELECT Id_Localisation FROM Localisation WHERE Lieux = '" + lieux + "')," + id + ")",
+                                                                                        co.connection.query("INSERT INTO provenir (Id_Localisation,Id_Article) VALUES ((SELECT Id_Localisation FROM Localisation WHERE Lieux = '" + tik.payload.Lieu + "')," + id + ")",
                                                                                             function (error, rows) {
                                                                                                 if (!!error) {
                                                                                                     console.log('Erreur dans la requête 8 ');

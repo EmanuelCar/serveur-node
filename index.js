@@ -11,7 +11,8 @@ var post_avis = require('./query/post/avis.js');
 var post_user = require('./query/post/utilisateur.js');
 var post_photo = require('./query/post/photo.js');
 var post_panier = require('./query/post/panier.js');
-var post_signal = require('./query/post/signaler.js');
+var post_invisible = require('./query/post/invisible.js');
+var post_visible = require('./query/post/visible.js');
 
 var co = require('./database/bddconnect');
 
@@ -133,34 +134,45 @@ myRouter.route('/panier/delete')                    //Supprimer le panier
     .post(post_panier.suprpanier)
 //-------------------------------------------------------
 
-//Signaler-----------------------------------------------
-myRouter.route('/signal/photo')                     //Rendre invisible au public une photo
-    .post(post_signal.signal_photo)
+//Invisible-----------------------------------------------
+myRouter.route('/invisible/photo')                  //Rendre invisible au public une photo
+    .post(post_invisible.invisible_photo)
 
-myRouter.route('/signal/comment')                   //Rendre invisible au public un commentaire
-    .post(post_signal.signal_comment)
+myRouter.route('/invisible/comment')                //Rendre invisible au public un commentaire
+    .post(post_invisible.invisible_comment)
 
-myRouter.route('/signal/event')                     //Rendre invisible au public un évènement
-    .post(post_signal.signal_event)
+myRouter.route('/invisible/event')                  //Rendre invisible au public un évènement
+    .post(post_invisible.invisible_event)
+//-------------------------------------------------------
+
+//Visible-----------------------------------------------
+myRouter.route('/visible/photo')                    //Rendre visible au public une photo
+    .post(post_visible.visible_photo)
+
+myRouter.route('/visible/comment')                  //Rendre visible au public un commentaire
+    .post(post_visible.visible_comment)
+
+myRouter.route('/visible/event')                    //Rendre visible au public un évènement
+    .post(post_visible.visible_event)
 //-------------------------------------------------------
 
 //Autres-------------------------------------------------
-myRouter.route('/statut/liste')                    //Afficher la liste des roles
+myRouter.route('/statut/liste')                     //Afficher la liste des roles
     .get(get_autre.statut)
 
-myRouter.route('/lieu/liste')                      //Afficher la liste des lieux
+myRouter.route('/lieu/liste')                       //Afficher la liste des lieux
     .get(get_autre.lieu)
 
-myRouter.route('/event/liste')                     //Afficher la liste des évènements
+myRouter.route('/event/liste')                      //Afficher la liste des évènements
     .get(get_autre.event)
 
-myRouter.route('/photo/liste')                     //Afficher la liste des photos
+myRouter.route('/photo/liste')                      //Afficher la liste des photos
     .get(get_autre.photo)
 
-myRouter.route('/comment/liste')                   //Afficher la liste des commentaires
+myRouter.route('/comment/liste')                    //Afficher la liste des commentaires
     .get(get_autre.recupcomment)
 
-myRouter.route('/article/categorie/liste')         //Afficher la liste des catégories
+myRouter.route('/article/categorie/liste')          //Afficher la liste des catégories
     .get(get_autre.recupcategorie)
 //-------------------------------------------------------
 

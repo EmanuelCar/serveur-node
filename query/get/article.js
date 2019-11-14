@@ -109,7 +109,7 @@ var best3 = function (req, res) {
             } else if (rows.length == 0) {
                 res.json({ message: "Veuillez sélectionner une localisation valide !" })
             } else {
-                co.connection.query("SELECT article.Nom, SUM(Quantite) AS Quantité_totale FROM acheter INNER JOIN article ON acheter.Id_Article = article.Id_Article INNER JOIN provenir ON provenir.Id_article = article.Id_article INNER JOIN localisation ON localisation.Id_Localisation = provenir.Id_Localisation INNER JOIN commande ON acheter.Id_commande = commande.Id_commande WHERE commande.Fini = TRUE AND localisation.Lieux = ? GROUP BY article.Nom ORDER BY Quantité_totale DESC LIMIT 3", [tik.payload.Lieu], function (error, rows) {
+                co.connection.query("SELECT article.Nom, SUM(Quantite) AS Quantité_totale, image.URL FROM acheter INNER JOIN article ON acheter.Id_Article = article.Id_Article INNER JOIN image ON article.Id_image = image.Id_image INNER JOIN provenir ON provenir.Id_article = article.Id_article INNER JOIN localisation ON localisation.Id_Localisation = provenir.Id_Localisation INNER JOIN commande ON acheter.Id_commande = commande.Id_commande WHERE commande.Fini = TRUE AND localisation.Lieux = ? GROUP BY article.Nom ORDER BY Quantité_totale DESC LIMIT 3", [tik.payload.Lieu], function (error, rows) {
                     if (!!error) {
                         console.log('Erreur dans la requête');
                         res.json({ message: "Erreur dans la requête !" });
@@ -120,42 +120,48 @@ var best3 = function (req, res) {
                             "Article 1":
                             {
                                 "Nom": rows[0].Nom,
-                                "Quantité": rows[0].Quantité_totale
+                                "Quantité": rows[0].Quantité_totale,
+                                "URL": rows[0].URL
                             },
-                            message: "Affichage des meilleurs articles"
+                            message: "Affichage du meilleur article"
                         })
                     } else if (rows.length == 2) {
                         res.json({
                             "Article 1":
                             {
                                 "Nom": rows[0].Nom,
-                                "Quantité": rows[0].Quantité_totale
+                                "Quantité": rows[0].Quantité_totale,
+                                "URL": rows[0].URL
                             },
                             "Article 2":
                             {
                                 "Nom": rows[1].Nom,
-                                "Quantité": rows[1].Quantité_totale
+                                "Quantité": rows[1].Quantité_totale,
+                                "URL": rows[1].URL
                             },
-                            message: "Affichage des meilleurs articles"
+                            message: "Affichage des 2 meilleurs articles"
                         })
                     } else {
                         res.json({
                             "Article 1":
                             {
                                 "Nom": rows[0].Nom,
-                                "Quantité": rows[0].Quantité_totale
+                                "Quantité": rows[0].Quantité_totale,
+                                "URL": rows[0].URL
                             },
                             "Article 2":
                             {
                                 "Nom": rows[1].Nom,
-                                "Quantité": rows[1].Quantité_totale
+                                "Quantité": rows[1].Quantité_totale,
+                                "URL": rows[1].URL
                             },
                             "Article 3":
                             {
                                 "Nom": rows[2].Nom,
-                                "Quantité": rows[2].Quantité_totale
+                                "Quantité": rows[2].Quantité_totale,
+                                "URL": rows[2].URL
                             },
-                            message: "Affichage des meilleurs articles"
+                            message: "Affichage des 3 meilleurs articles"
                         })
                     }
                 })

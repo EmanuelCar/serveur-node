@@ -24,7 +24,9 @@ var userco = function (req, res) {
                         console.log('Requête réussie !');
                         res.json({
                             Id_user: rows[0].Id_utilisateur,
-                            token: jwt.generateTokenForUser(rows[0])
+                            token: jwt.generateTokenForUser(rows[0]),
+                            role: rows[0].Roles, 
+                            message: 'Vous êtes bien connecté !'
                         })
                     } else {
                         res.json({ message: 'Mot de passe incorrect !' });
@@ -56,7 +58,7 @@ var userinsc = function (req, res) {
             } else if (password.length < 8) {
                 res.json({ message: 'Le mot de passe doit contenir au moins 8 caractères !' });
             } else if (!rgx.test(password)) {
-                res.json({ message: 'Le mot de passe doit contenir au moins une lettre minuscule, une majuscule et un chiffre!' });
+                res.json({ message: 'Le mot de passe doit contenir au moins une lettre minuscule, une majuscule et un chiffre !' });
             } else if (rows.length == 1) {
                 res.json({ message: 'Un compte avec cette adresse existe déjà !' });
             } else {

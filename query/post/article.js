@@ -108,7 +108,7 @@ var addarticle = function (req, res) {
                                                             });
                                                         } else {
                                                             var cat = rows[0].Id_Categorie;
-                                                            co.connection.query("INSERT INTO article (Nom,Prix,Description,Id_Categorie,Id_image) VALUES ('" + nom + "'," + prix + ",'" + description + "'," + cat + "," + img + ")",
+                                                            co.connection.query("INSERT INTO article (Nom,Prix,Description,Id_Categorie,Id_image) VALUES (?, ?, ?, ?, ?)", [nom, prix, description, cat, img],
                                                                 function (error, rows) {
                                                                     if (!!error) {
                                                                         console.log('Erreur dans la requête 5 ');

@@ -22,7 +22,9 @@ var recupphoto = function (req, res) {
                     const photos = rows.map((row) => ({
                         URL: row.URL,
                     }))
-                    res.json({ photos });
+                    res.json({ photos,
+                        message: "Liste de toutes les photos"
+                      });
                 }
             });
         } else {

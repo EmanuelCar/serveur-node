@@ -258,7 +258,7 @@ var suprcomm = function (req, res) {
                 });
         } else {
             console.log('access denied ');
-            res.json({ message: "Vous n'avais pas les droits pour effectuer cette action  !" });
+            res.json({ message: "Vous n'avez pas les droits pour effectuer cette action !" });
         }
     } else {
         console.log('Erreur dans la requête');

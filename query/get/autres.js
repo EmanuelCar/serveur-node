@@ -19,7 +19,9 @@ var statut = function (req, res) {
                 id: row.Id_Statut,
                 Roles: row.Roles
             }))
-            res.json({ roles });
+            res.json({ roles,
+                       message: "Liste des roles"
+            });
         }
     });
 }
@@ -36,7 +38,9 @@ var lieu = function (req, res) {
                 id: row.Id_Localisation,
                 Ville: row.Lieux
             }))
-            res.json({ lieux });
+            res.json({ lieux,
+                message: "Liste des lieux"
+             });
         }
     });
 }
@@ -55,7 +59,9 @@ var event = function (req, res) {
                     id: row.Id_evenements,
                     Nom: row.Nom
                 }))
-                res.json({ évènements });
+                res.json({ évènements,
+                    message: "Liste des évènements"
+                 });
             }
         });
     } else {
@@ -74,7 +80,9 @@ var photo = function(req, res) {
                 Évènement: row.event,
                 URL: row.URL,
             }))
-            res.json({ photos });
+            res.json({ photos,
+                message: "Liste des photos visibles"
+              });
         }
     })
 }
@@ -93,7 +101,9 @@ var recupcomment = function(req, res) {
                 Prenom: row.Prenom,
                 Commentaire: row.commentaire
             }))
-            res.json({ photos });
+            res.json({ photos,
+                message: "Liste des commentaires"
+              });
         }
     })
 }
@@ -108,7 +118,9 @@ var recupcategorie = function(req, res) {
             const catégories = rows.map((row) => ({
                 Nom: row.Nom
             }))
-            res.json({ catégories });
+            res.json({ catégories,
+                message: "Liste des catégories"
+              });
         }
     })
 }

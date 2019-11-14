@@ -26,7 +26,9 @@ var article = function (req, res) {
                         Categorie: row.Categorie,
                         URL: row.URL
                     }))
-                    res.json({ articles });
+                    res.json({ articles,
+                               message: "Récupération des articles réussi"
+                    });
                 }
             });
     } else {
@@ -54,7 +56,9 @@ var articlebyprix = function (req, res) {
                         Categorie: row.Categorie,
                         URL: row.URL
                     }))
-                    res.json({ articles });
+                    res.json({ articles,
+                               message: "Le tri par prix est effectif"
+                    });
                 }
             });
     } else {
@@ -82,7 +86,10 @@ var filtrecat = function (req, res) {
                         Categorie: row.Categorie,
                         URL: row.URL
                     }))
-                    res.json({ articles });
+                    res.json({ 
+                        articles,
+                        message: "Le tri par catégorie est effectif"
+                    });
                 }
             });
     } else {
@@ -114,7 +121,8 @@ var best3 = function (req, res) {
                             {
                                 "Nom": rows[0].Nom,
                                 "Quantité": rows[0].Quantité_totale
-                            }
+                            },
+                            message: "Affichage des meilleurs articles"
                         })
                     } else if (rows.length == 2) {
                         res.json({
@@ -127,7 +135,8 @@ var best3 = function (req, res) {
                             {
                                 "Nom": rows[1].Nom,
                                 "Quantité": rows[1].Quantité_totale
-                            }
+                            },
+                            message: "Affichage des meilleurs articles"
                         })
                     } else {
                         res.json({
@@ -145,7 +154,8 @@ var best3 = function (req, res) {
                             {
                                 "Nom": rows[2].Nom,
                                 "Quantité": rows[2].Quantité_totale
-                            }
+                            },
+                            message: "Affichage des meilleurs articles"
                         })
                     }
                 })

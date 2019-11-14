@@ -2,6 +2,7 @@
 var get_article = require('./query/get/article.js');
 var get_photo = require('./query/get/photo.js');
 var get_event = require('./query/get/evenement.js');
+var get_panier = require('./query/get/panier.js');
 var get_autre = require('./query/get/autres.js');
 
 //Récupérer les requêtes utilisant POST
@@ -125,7 +126,7 @@ myRouter.route('/panier/add')                       //Ajouter au panier
     .post(post_panier.panier)
 
 myRouter.route('/panier/user')                      //Afficher le panier
-    .post(post_panier.commandes)
+    .get(get_panier.commandes)
 
 myRouter.route('/panier/pass')                      //Passer la commande
     .post(post_panier.passcommand)

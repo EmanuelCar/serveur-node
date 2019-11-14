@@ -7,7 +7,7 @@ var jwt = require('../../jwt/token.js');
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-//Les membres du BDE peuvent récupéérer la liste des participants  
+//Les membres du BDE peuvent récupérer la liste des participants  
 var participant = function (req, res) {
     var event = req.body.event;
     tik = jwt.decodeTokenForUser(req, res);
@@ -31,7 +31,9 @@ var participant = function (req, res) {
                                 Nom: row.Nom,
                                 Prenom: row.Prenom,
                             }))
-                            res.json({ participants });
+                            res.json({ participants,
+                                message: "Liste des participants"
+                              });
                         }
                     })
                 }
@@ -67,7 +69,9 @@ var actuevent = function (req, res) {
                             "Date de fin": row.Date_fin,
                             Lieu: row.Lieux
                         }))
-                        res.json({ évènements });
+                        res.json({ évènements,
+                            message: "Liste des évènements actuels"
+                          });
                     }
                 })
             }
@@ -101,7 +105,9 @@ var pactuevent = function (req, res) {
                             "Date de fin": row.Date_fin,
                             Lieu: row.Lieux
                         }))
-                        res.json({ évènements });
+                        res.json({ évènements,
+                            message: "Liste des évènements passés"
+                          });
                     }
                 })
             }

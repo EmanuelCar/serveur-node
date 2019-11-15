@@ -116,6 +116,7 @@ var best3 = function (req, res) {
                     } else if (rows.length == 0) {
                         res.json({ message: "Il n'y a pas encore d'articles commandé dans cette ville !" })
                     } else if (rows.length == 1) {
+                        console.log('Requête réussie !\n');
                         res.json({
                             "Article 1":
                             {

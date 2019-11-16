@@ -15,20 +15,20 @@ var eventpar = function (req, res) {
     if (tik && event) {
         co.connection.query("SELECT participer.Id_utilisateur, participer.Id_evenements FROM participer INNER JOIN evenement ON participer.Id_evenements = evenement.Id_evenements WHERE Id_utilisateur = ? AND evenement.Nom = ?", [tik.payload.Id, event], function(error, rows) {
             if (!!error) {
-                console.log('Erreur dans la requête');
+                console.log('Erreur dans la requête 1');
                 res.json({ message: "erreur de la requête" });
             } else if(rows.length == 1){
                 res.json({ message: "tu es déjà inscrit à cet évènement !" });
             } else {
                 co.connection.query("INSERT INTO participer (Id_utilisateur,Id_evenements) SELECT Id_utilisateur, Id_evenements FROM utilisateur,evenement WHERE utilisateur.Id_utilisateur = ? AND evenement.Nom = ? AND visible = TRUE", [tik.payload.Id, event], function (error, rows) {
                     if (!!error) {
-                        console.log('Erreur dans la requête');
+                        console.log('Erreur dans la requête 2');
                         res.json({ message: "erreur de la requête" });
                     } else {
                         co.connection.query("SELECT participer.Id_utilisateur, participer.Id_evenements FROM participer INNER JOIN evenement ON participer.Id_evenements = evenement.Id_evenements WHERE Id_utilisateur = ? AND evenement.Nom = ?", [tik.payload.Id, event], function(error, rows) {
                             if (!!error) {
                                 console.log('Erreur dans la requête');
-                                res.json({ message: "erreur de la requête" });
+                                res.json({ message: "erreur de la requête 3" });
                             } else if(rows.length == 0){
                                 res.json({ message: "tu ne peux pas t'inscrire à cet évènement" });
                             } else {

@@ -125,11 +125,28 @@ var recupcategorie = function(req, res) {
     })
 }
 
+var compteurLike = function(req, res) {
+    co.connection.query("SELECT SUM(avis.Aime) AS nbr, image.URL AS URL FROM image LEFT JOIN avis ON avis.Id_image = image.Id_image WHERE image.Id_evenements IS NOT NULL AND image.Image_evenement = 0 GROUP BY image.Id_image", function(error, rows) {
+        if (!!error) {
+            console.log('Erreur dans la requête');
+            res.json({ message: "Erreur dans la requête !" });
+        } else {
+            const like = rows.map((row) => ({
+                nombre: row.nbr,
+                URL: row.URL
+            }))
+            res.json({ like,
+                message: "nombre de like"
+              });
+        }
+    })
+}
 module.exports = {
     statut,
     lieu,
     event,
     photo,
     recupcomment,
-    recupcategorie
+    recupcategorie,
+    compteurLike
 };

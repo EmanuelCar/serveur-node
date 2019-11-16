@@ -11,7 +11,7 @@ app.use(bodyParser.json());
 var commandes = function (req, res) {
     tik = jwt.decodeTokenForUser(req, res);
     if (tik) {
-        co.connection.query("SELECT article.Nom, acheter.Quantite FROM `article` INNER JOIN acheter ON article.Id_Article = acheter.Id_Article INNER JOIN commande ON commande.Id_commande = acheter.id_commande INNER JOIN utilisateur On utilisateur.Id_utilisateur = commande.Id_utilisateur WHERE utilisateur.Id_utilisateur = ? AND commande.Fini = 0", [tik.payload.Id],
+        co.connection.query("SELECT article.Nom, acheter.Quantite, image.URL FROM `article` INNER JOIN acheter ON article.Id_Article = acheter.Id_Article INNER JOIN commande ON commande.Id_commande = acheter.id_commande INNER JOIN utilisateur On utilisateur.Id_utilisateur = commande.Id_utilisateur INNER JOIN image ON article.Id_image = image.Id_image WHERE utilisateur.Id_utilisateur = ? AND commande.Fini = 0", [tik.payload.Id],
             function (error, rows) {
                 if (!!error) {
                     console.log('Erreur dans la requête');
@@ -20,6 +20,7 @@ var commandes = function (req, res) {
                     const commande = rows.map((row) => ({
                         Article: row.Nom,
                         Quantite: row.Quantite,
+                        URL: row.URL,
                     }))
                     res.json({ commande,
                         message: "Affichage du panier"

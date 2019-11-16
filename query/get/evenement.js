@@ -31,9 +31,10 @@ var participant = function (req, res) {
                                 Nom: row.Nom,
                                 Prenom: row.Prenom,
                             }))
-                            res.json({ participants,
+                            res.json({
+                                participants,
                                 message: "Liste des participants"
-                              });
+                            });
                         }
                     })
                 }
@@ -56,7 +57,7 @@ var actuevent = function (req, res) {
             if (rows.length == 0) {
                 res.json({ message: "Veuillez sélectionner une localisation existante !" });
             } else {
-                co.connection.query("SELECT Nom, Description, Date_debut, Date_fin, evenement.visible, localisation.Lieux, image.URL FROM evenement INNER JOIN image ON evenement.Id_evenements = image.Id_evenements INNER JOIN localisation ON evenement.Id_Localisation = localisation.Id_Localisation WHERE Date_fin >= ? AND localisation.Lieux = ? AND Image_evenement = 1 AND evenement.visible = TRUE", [date, tik.payload.Lieu], function (error, rows) {
+                co.connection.query("SELECT Nom, Description, Date_debut, Date_fin, evenement.visible, localisation.Lieux, image.URL FROM evenement INNER JOIN image ON evenement.Id_evenements = image.Id_evenements INNER JOIN localisation ON evenement.Id_Localisation = localisation.Id_Localisation WHERE Date_fin >= ? AND localisation.Lieux = ? AND Image_evenement = 1 AND evenement.visible = 1", [date, tik.payload.Lieu], function (error, rows) {
                     if (!!error) {
                         console.log('Erreur dans la requête');
                         res.json({ message: "Erreur dans la requête !" });
@@ -69,9 +70,10 @@ var actuevent = function (req, res) {
                             "Date de fin": row.Date_fin,
                             Lieu: row.Lieux
                         }))
-                        res.json({ évènements,
+                        res.json({
+                            évènements,
                             message: "Liste des évènements actuels"
-                          });
+                        });
                     }
                 })
             }
@@ -105,9 +107,22 @@ var pactuevent = function (req, res) {
                             "Date de fin": row.Date_fin,
                             Lieu: row.Lieux
                         }))
-                        res.json({ évènements,
-                            message: "Liste des évènements passés"
-                          });
+                        co.connection.query("SELECT Nom, Description, Date_debut, Date_fin, evenement.visible, localisation.Lieux, image.URL FROM evenement INNER JOIN image ON evenement.Id_evenements = image.Id_evenements INNER JOIN localisation ON evenement.Id_Localisation = localisation.Id_Localisation WHERE Date_fin < ? AND localisation.Lieux = ? AND Image_evenement = 0 AND evenement.visible = TRUE", [date, tik.payload.Lieu], function (error, rows) {
+                            if (!!error) {
+                                console.log('Erreur dans la requête');
+                                res.json({ message: "Erreur dans la requête !" });
+                            } else {
+                                const photo = rows.map((row) => ({
+                                    évènement: row.Nom,
+                                    URL: row.URL,
+                                   
+                                }))
+                                res.json({
+                                    évènements,photo,
+                                    message: "Liste des évènements passés"
+                                });
+                            }
+                        });
                     }
                 })
             }

@@ -90,13 +90,13 @@ myRouter.route('/event/join')                       //Rejoindre un évènement
     .post(post_event.eventpar)
 
 myRouter.route('/event/participant')                //Récupérer les participants sur un évènement
-    .get(get_event.participant)  
+    .get(get_event.participant)
 
 myRouter.route('/event/actuel')                     //Afficher les évènements non-passés
-    .get(get_event.actuevent)     
+    .get(get_event.actuevent)
 
 myRouter.route('/event/passe')                      //Afficher les évènements passés
-    .get(get_event.pactuevent)    
+    .get(get_event.pactuevent)
 //-------------------------------------------------------
 
 //Avis---------------------------------------------------
@@ -115,10 +115,10 @@ myRouter.route('/photo/add')                        //Ajouter une photo
     .post(post_photo.addphoto)
 
 myRouter.route('/photo/recup')                      //Récupérer toutes les photos
-    .get(get_photo.recupphoto)    
+    .get(get_photo.recupphoto)
 
 myRouter.route('/photo/suppr')                      //Supprimer une photo
-    .post(post_photo.suprphoto)   
+    .post(post_photo.suprphoto)
 //-------------------------------------------------------
 
 //Panier-------------------------------------------------
@@ -172,6 +172,9 @@ myRouter.route('/photo/liste')                      //Afficher la liste des phot
 
 myRouter.route('/comment/liste')                    //Afficher la liste des commentaires
     .get(get_autre.recupcomment)
+
+myRouter.route('/photo/like/')          //Afficher la liste des catégories
+    .get(get_autre.compteurLike)
 
 myRouter.route('/article/categorie/liste')          //Afficher la liste des catégories
     .get(get_autre.recupcategorie)

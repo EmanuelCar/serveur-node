@@ -173,7 +173,7 @@ myRouter.route('/photo/liste')                      //Afficher la liste des phot
 myRouter.route('/comment/liste')                    //Afficher la liste des commentaires
     .get(get_autre.recupcomment)
 
-myRouter.route('/photo/like/')          //Afficher la liste des catégories
+myRouter.route('/photo/like/')                      //Afficher la liste des catégories
     .get(get_autre.compteurLike)
 
 myRouter.route('/article/categorie/liste')          //Afficher la liste des catégories

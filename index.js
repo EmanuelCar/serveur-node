@@ -90,7 +90,7 @@ myRouter.route('/event/join')                       //Rejoindre un évènement
     .post(post_event.eventpar)
 
 myRouter.route('/event/participant')                //Récupérer les participants sur un évènement
-    .get(get_event.participant)
+    .post(post_event.participant)
 
 myRouter.route('/event/actuel')                     //Afficher les évènements non-passés
     .get(get_event.actuevent)

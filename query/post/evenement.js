@@ -119,7 +119,49 @@ var eventadd = function (req, res) {
     }
 }
 
+//Les membres du BDE peuvent récupérer la liste des participants  
+var participant = function (req, res) {
+    var event = req.body.event;
+    tik = jwt.decodeTokenForUser(req, res);
+    if (event && tik) {
+        if (tik.payload.Statut == "membre") {
+            co.connection.query("SELECT Nom FROM evenement WHERE Nom = ?", [event], function (error, rows) {
+                if (!!error) {
+                    console.log('Erreur dans la requête');
+                    res.json({ message: "Erreur dans la requête !" });
+                } else if (rows.length == 0) {
+                    res.json({ message: "veuillez sélectionner un évènement existant !" })
+                } else {
+                    co.connection.query("SELECT evenement.Nom AS évènement, utilisateur.Nom, utilisateur.Prenom FROM participer INNER JOIN evenement ON participer.Id_evenements = evenement.Id_evenements INNER JOIN utilisateur ON participer.Id_Utilisateur = utilisateur.Id_Utilisateur WHERE evenement.Nom = ?", [event], function (error, rows) {
+                        if (!!error) {
+                            console.log('Erreur dans la requête');
+                            res.json({ message: "Erreur dans la requête !" });
+                        } else if (rows.length == 0) {
+                            res.json({ message: "Il n'y a pas encore de participant à cet évènement !" })
+                        } else {
+                            const participants = rows.map((row) => ({
+                                Nom: row.Nom,
+                                Prenom: row.Prenom,
+                            }))
+                            res.json({
+                                participants,
+                                message: "Liste des participants"
+                            });
+                        }
+                    })
+                }
+            })
+        } else {
+            res.json({ message: "Vous devez être un membre du BDE pour pouvoir télécharger la liste des participants" });
+        }
+    } else {
+        res.json({ message: "veuillez sélectionner un évènement !" })
+    }
+}
+
+
 module.exports = {
     eventpar,
-    eventadd
+    eventadd,
+    participant
 };

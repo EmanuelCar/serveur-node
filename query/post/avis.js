@@ -161,7 +161,6 @@ var comment = function (req, res) {
                         co.connection.rollback(function () {
                         });
                     } else if (rows[0] == null) {
-                        console.log(com)
                         co.connection.query("INSERT INTO avis (Id_utilisateur, Id_image, commentaire) VALUES (?, ?, ?) ", [tik.payload.Id, img, commentaire], function (error, rows) {
                             if (!!error) {
                                 console.log('Erreur dans la requête 4 ');
@@ -200,7 +199,7 @@ var comment = function (req, res) {
                                             });
                                         } else {
                                             console.log('Requête réussie !\n');
-                                            res.json({ message: "message ajouté !" });
+                                            res.json({ message: "Commentaire ajouté !" });
                                         }
                                     });
                                 }

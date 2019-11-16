@@ -57,7 +57,7 @@ var actuevent = function (req, res) {
             if (rows.length == 0) {
                 res.json({ message: "Veuillez sélectionner une localisation existante !" });
             } else {
-                co.connection.query("SELECT Nom, Description, Date_debut, Date_fin, evenement.visible, localisation.Lieux, image.URL FROM evenement INNER JOIN image ON evenement.Id_evenements = image.Id_evenements INNER JOIN localisation ON evenement.Id_Localisation = localisation.Id_Localisation WHERE Date_fin >= ? AND localisation.Lieux = ? AND Image_evenement = 1 AND evenement.visible = TRUE", [date, tik.payload.Lieu], function (error, rows) {
+                co.connection.query("SELECT Nom, Description, Date_debut, Date_fin, evenement.visible, localisation.Lieux, image.URL FROM evenement INNER JOIN image ON evenement.Id_evenements = image.Id_evenements INNER JOIN localisation ON evenement.Id_Localisation = localisation.Id_Localisation WHERE Date_fin >= ? AND localisation.Lieux = ? AND Image_evenement = 1 AND evenement.visible = 1", [date, tik.payload.Lieu], function (error, rows) {
                     if (!!error) {
                         console.log('Erreur dans la requête');
                         res.json({ message: "Erreur dans la requête !" });
@@ -115,11 +115,10 @@ var pactuevent = function (req, res) {
                                 const photo = rows.map((row) => ({
                                     évènement: row.Nom,
                                     URL: row.URL,
-
+                                   
                                 }))
                                 res.json({
-                                    évènements,
-                                    photo,
+                                    évènements,photo,
                                     message: "Liste des évènements passés"
                                 });
                             }

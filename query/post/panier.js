@@ -149,7 +149,7 @@ var panier = function (req, res) {
 var passcommand = function (req, res) {
     tik = jwt.decodeTokenForUser(req, res);
     if (tik) {
-        co.connection.query("SELECT Mail, Id_utilisateur FROM utilisateur WHERE Mail = ?", [tik.payload.Id], function (error, rows) {
+        co.connection.query("SELECT Mail, Id_utilisateur FROM utilisateur WHERE Id_utilisateur = ?", [tik.payload.Id], function (error, rows) {
             if (!!error) {
                 console.log('Erreur dans la requête');
                 res.json({ message: "Erreur dans la requête !" });

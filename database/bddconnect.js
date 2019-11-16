@@ -3,9 +3,9 @@ var mysql = require('mysql');
 var connection = mysql.createConnection({
     host: "localhost",
     user: "root",
-    port: "",
+    port: "3308",
     password: "mdpintrouvable",
-    database: "projet_web_v2"
+    database: "projet_webv2"
 });
 
 module.exports.connection = connection;

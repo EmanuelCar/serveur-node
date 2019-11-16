@@ -79,14 +79,12 @@ var filtrecat = function (req, res) {
                 } else {
                     console.log('Requête réussie !\n');
                     const articles = rows.map((row) => ({
-                        Categorie: [{
                         Nom: row.Nom,
                         Stock: row.Stock,
                         Prix: row.Prix,
                         Description: row.Description,
                         Categorie: row.Categorie,
                         URL: row.URL
-                        }],
                     }))
                     res.json({ 
                         articles,

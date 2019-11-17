@@ -67,7 +67,7 @@ var pactuevent = function (req, res) {
                             "Date de fin": row.Date_fin,
                             Lieu: row.Lieux
                         }))
-                        co.connection.query("SELECT Nom, Description, Date_debut, Date_fin, evenement.visible, localisation.Lieux, image.URL FROM evenement INNER JOIN image ON evenement.Id_evenements = image.Id_evenements INNER JOIN localisation ON evenement.Id_Localisation = localisation.Id_Localisation WHERE Date_fin < ? AND localisation.Lieux = ? AND Image_evenement = 0 AND evenement.visible = TRUE", [date, tik.payload.Lieu], function (error, rows) {
+                        co.connection.query("SELECT Nom, Description, Date_debut, Date_fin, evenement.visible, localisation.Lieux, image.URL FROM evenement INNER JOIN image ON evenement.Id_evenements = image.Id_evenements INNER JOIN localisation ON evenement.Id_Localisation = localisation.Id_Localisation WHERE Date_fin < ? AND localisation.Lieux = ? AND Image_evenement = 0 AND evenement.visible = TRUE AND image.visible = TRUE", [date, tik.payload.Lieu], function (error, rows) {
                             if (!!error) {
                                 console.log('Erreur dans la requête');
                                 res.json({ message: "Erreur dans la requête !" });

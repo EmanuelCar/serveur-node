@@ -1,3 +1,5 @@
+//création du jeton d'identification avec l'ID de la personne, son statut et sa localisation, il a une durabilité d'1 heure 
+
 var jwt = require('jsonwebtoken');
 
 const JWT_SIGN_SECRET = '7zfe1e2f4z1deqsfsvfq45ZSDFf565e48f41DFGDZ486312GkzdgiyA8';

@@ -49,7 +49,7 @@ var lieu = function (req, res) {
 var event = function (req, res) {
     tik = jwt.decodeTokenForUser(req, res);
     if (tik) {
-        co.connection.query("SELECT Id_evenements, Nom, evenement.Id_Localisation FROM evenement INNER JOIN localisation ON evenement.Id_Localisation = localisation.Id_Localisation WHERE localisation.Lieux = ? AND visible = TRUE", [tik.payload.Lieu], function (error, rows) {
+        co.connection.query("SELECT evenement.Id_evenements, Nom, image.URL, evenement.Id_Localisation FROM evenement INNER JOIN image ON evenement.Id_evenements = image.Id_evenements INNER JOIN localisation ON evenement.Id_Localisation = localisation.Id_Localisation WHERE localisation.Lieux = ? AND evenement.visible = TRUE AND Image_evenement = TRUE", [tik.payload.Lieu], function (error, rows) {
             if (!!error) {
                 console.log('Erreur dans la requête');
                 res.json({ message: "Erreur dans la requête !" });
@@ -57,7 +57,8 @@ var event = function (req, res) {
                 console.log('Requête réussie !');
                 const évènements = rows.map((row) => ({
                     id: row.Id_evenements,
-                    Nom: row.Nom
+                    Nom: row.Nom,
+                    Url: row.URL
                 }))
                 res.json({ évènements,
                     message: "Liste des évènements"

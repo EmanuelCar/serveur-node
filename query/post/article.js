@@ -124,35 +124,25 @@ var addarticle = function (req, res) {
                                                                             });
                                                                         } else {
                                                                             var id = rows[0].Id_Article;
-                                                                            co.connection.query("UPDATE image SET Id_Article = " + id + " WHERE image.Id_image = " + img + "",
+                                                                            co.connection.query("INSERT INTO provenir (Id_Localisation,Id_Article) VALUES ((SELECT Id_Localisation FROM Localisation WHERE Lieux = '" + tik.payload.Lieu + "')," + id + ")",
                                                                                 function (error, rows) {
                                                                                     if (!!error) {
-                                                                                        console.log('Erreur dans la requête 7 ');
+                                                                                        console.log('Erreur dans la requête 8 ');
                                                                                         res.json({ message: "erreur de la requête" });
                                                                                         co.connection.rollback(function () {
                                                                                         });
                                                                                     } else {
-                                                                                        co.connection.query("INSERT INTO provenir (Id_Localisation,Id_Article) VALUES ((SELECT Id_Localisation FROM Localisation WHERE Lieux = '" + tik.payload.Lieu + "')," + id + ")",
-                                                                                            function (error, rows) {
-                                                                                                if (!!error) {
-                                                                                                    console.log('Erreur dans la requête 8 ');
-                                                                                                    res.json({ message: "erreur de la requête" });
-                                                                                                    co.connection.rollback(function () {
-                                                                                                    });
-                                                                                                } else {
-                                                                                                    co.connection.commit(function (error) {
-                                                                                                        if (!!error) {
-                                                                                                            console.log('Erreur dans la requête 9 ');
-                                                                                                            res.json({ message: "erreur de la requête" });
-                                                                                                            co.connection.rollback(function () {
-                                                                                                            });
-                                                                                                        } else {
-                                                                                                            console.log('Requête réussie !\n');
-                                                                                                            res.json({ message: "Ajout de l'article " + nom });
-                                                                                                        }
-                                                                                                    });
-                                                                                                }
-                                                                                            });
+                                                                                        co.connection.commit(function (error) {
+                                                                                            if (!!error) {
+                                                                                                console.log('Erreur dans la requête 9 ');
+                                                                                                res.json({ message: "erreur de la requête" });
+                                                                                                co.connection.rollback(function () {
+                                                                                                });
+                                                                                            } else {
+                                                                                                console.log('Requête réussie !\n');
+                                                                                                res.json({ message: "Ajout de l'article " + nom });
+                                                                                            }
+                                                                                        });
                                                                                     }
                                                                                 });
                                                                         }
@@ -188,38 +178,48 @@ var suprarticle = function (req, res) {
             co.connection.query("SELECT Id_utilisateur FROM utilisateur WHERE Id_utilisateur = ?", [tik.payload.Id], function (error, rows) {
                 if (!!error) {
                     console.log('Erreur dans la requête 1');
-                    res.json({ message: "Erreur dans la requête !" });
+                    res.json({ message: "Erreur dans la requête 1!" });
                 } else if (rows.length == 0) {
                     res.json({ message: "Cet utilisateur n'existe pas !" })
                 } else {
-                    co.connection.query("SELECT Nom, Id_Article FROM article WHERE Nom = ?", [article], function (error, rows) {
+                    co.connection.query("SELECT Nom, article.Id_Article, article.Id_image FROM article INNER JOIN image ON article.Id_image = image.Id_image WHERE Nom = ?", [article], function (error, rows) {
                         if (!!error) {
                             console.log('Erreur dans la requête 2');
-                            res.json({ message: "Erreur dans la requête !" });
+                            res.json({ message: "Erreur dans la requête 2!" });
                         } else if (rows.length == 0) {
                             res.json({ message: "Cet article n'existe pas !" })
                         } else {
-                            co.connection.beginTransaction(function(error){
+                            var id_img = [rows[0].Id_image];
+                            co.connection.beginTransaction(function (error) {
                                 co.connection.query("DELETE FROM provenir WHERE Id_Article = ?", [rows[0].Id_Article], function (error, rows) {
                                     if (!!error) {
                                         console.log('Erreur dans la requête 3');
-                                        res.json({ message: "Erreur dans la requête !" });
-                                        co.connection.rollback(function(){
+                                        res.json({ message: "Erreur dans la requête 3!" });
+                                        co.connection.rollback(function () {
                                         });
                                     } else {
                                         co.connection.query("DELETE FROM article WHERE Nom = ?", [article], function (error, rows) {
                                             if (!!error) {
                                                 console.log('Erreur dans la requête 4');
-                                                res.json({ message: "Erreur dans la requête !" });
-                                                co.connection.rollback(function(){
+                                                res.json({ message: "Erreur dans la requête 4!" });
+                                                co.connection.rollback(function () {
                                                 });
                                             } else {
-                                                co.connection.commit(function(error){
-                                                    if(!!error) {
-                                                        co.connection.rollback(function(){
+                                                co.connection.query("DELETE FROM image WHERE Id_image = ?", [id_img], function (error, rows) {
+                                                    if (!!error) {
+                                                        console.log('Erreur dans la requête 5');
+                                                        res.json({ message: "Erreur dans la requête 5!" });
+                                                        co.connection.rollback(function () {
                                                         });
                                                     } else {
-                                                        res.json({ message: "L'article a bien été supprimé !" })
+                                                        co.connection.commit(function (error) {
+                                                            if (!!error) {
+                                                                co.connection.rollback(function () {
+                                                                });
+                                                            } else {
+                                                                res.json({ message: "L'article a bien été supprimé !" })
+                                                            }
+                                                        })
                                                     }
                                                 })
                                             }
@@ -238,7 +238,7 @@ var suprarticle = function (req, res) {
         co.connection.query("SELECT Id_utilisateur FROM utilisateur WHERE Id_utilisateur = ?", [tik.payload.Id], function (error, rows) {
             if (!!error) {
                 console.log('Erreur dans la requête');
-                res.json({ message: "Erreur dans la requête !" });
+                res.json({ message: "Erreur dans la requête 5!" });
             } else if (rows.length == 0) {
                 res.json({ message: "Cet utilisateur n'existe pas !" })
             } else {

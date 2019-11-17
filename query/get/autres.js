@@ -142,6 +142,29 @@ var compteurLike = function(req, res) {
         }
     })
 }
+
+var utilisateur = function (req, res) {
+    tik = jwt.decodeTokenForUser(req, res);
+    if (tik) {
+        co.connection.query("SELECT Nom, Prenom FROM utilisateur WHERE Id_utilisateur = ?", [tik.payload.Id], function (error, rows) {
+            if (!!error) {
+                console.log('Erreur dans la requête');
+                res.json({ message: "Erreur dans la requête !" });
+            } else {
+                console.log('Requête réussie !');
+                const personne = rows.map((row) => ({
+                    Nom: row.Nom,
+                    Prenom: row.Prenom
+                }))
+                res.json({ personne,
+                    message: "Liste des évènements"
+                 });
+            }
+        });
+    } else {
+        res.json({message: "Aucune personne n'a été sélectionné"})
+    }
+}
 module.exports = {
     statut,
     lieu,
@@ -149,5 +172,6 @@ module.exports = {
     photo,
     recupcomment,
     recupcategorie,
-    compteurLike
+    compteurLike,
+    utilisateur
 };

@@ -178,6 +178,9 @@ myRouter.route('/photo/like/')                      //Afficher la liste des cat√
 
 myRouter.route('/article/categorie/liste')          //Afficher la liste des cat√©gories
     .get(get_autre.recupcategorie)
+
+myRouter.route('/utilisateur/co')                   //Afficher le nom et prenom de l'utilisateur connecter 
+    .get(get_autre.utilisateur)
 //-------------------------------------------------------
 
 
